@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "Utils.h"
-#include "CheckMatrix.h"
+#include "public/Utils.h"
+#include "public/CheckMatrix.h"
 
 #define M 10
 #define N 10
@@ -19,7 +19,6 @@ int CheckDuplicatedColumns(double **A, int m, int n, DupColInfo *Cols, int nThre
     }
 }
 
-#if 1
 int main(int argc, char *argv[])
 {
     double **A = malloc(M * sizeof(double *));
@@ -42,4 +41,3 @@ int main(int argc, char *argv[])
 
     return 0;
 }
-#endif

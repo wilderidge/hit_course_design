@@ -1,7 +1,0 @@
-{
-    "files.associations": {
-        "checkmatrix.h": "c",
-        "stdio.h": "c",
-        "utils.h": "c"
-    }
-}

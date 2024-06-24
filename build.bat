@@ -1,2 +1,2 @@
-gcc task_1.c Utils.c -o task_1
-gcc task_2.c Utils.c -o task_2
+gcc task_1.c public/Utils.c -o bin/task_1
+gcc task_2.c public/Utils.c -o bin/task_2
