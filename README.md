@@ -27,3 +27,11 @@
 * [ ] 任务一循环展开
 * [ ] 任务二循环展开
 * [ ] 任务三循环展开
+
+## Use it 
+安装cmake
+```
+cmake -B build
+cmake --build build
+```
+可执行文件在bin文件夹中
