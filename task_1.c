@@ -93,6 +93,7 @@ int CheckEmptyAndSingletonCols(double *C, int m, int n, ColInfo **Cols, int *Col
     return 0;
 }
 
+#if 0
 int main(int argc, char *argv[])
 {
     double **A = malloc(M * sizeof(double *));
@@ -142,3 +143,4 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+#endif
