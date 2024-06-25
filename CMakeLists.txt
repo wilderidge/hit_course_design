@@ -1,6 +1,7 @@
 # CMake Project settings
 cmake_minimum_required (VERSION 3.8)
 set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 20)
 project("task")
 
 # C Compiler settings
@@ -20,3 +21,5 @@ add_executable (${PROJECT_NAME} task_1.c ${SRC_LIST})
 
 set(PROJECT_NAME "task_2")
 add_executable (${PROJECT_NAME} task_2.c ${SRC_LIST})
+
+add_subdirectory(${PROJECT_SOURCE_DIR}/test)

@@ -1,4 +1,4 @@
-
+#pragma once
 #define LOWER_BOUND     -10
 #define UPPER_BOUND     +10
 
