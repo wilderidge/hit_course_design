@@ -1,4 +1,4 @@
-#include "public/CheckMatrix.h"
+#include "CheckMatrix.h"
 
 void matrix_check(double **A, double *B, double *C);
 int CheckEmptyAndSingletonRows(double *B, int m, int n, RowInfo **Rows, int *RowsSize ,int nThread);

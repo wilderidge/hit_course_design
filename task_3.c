@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
-#include "task.h"
+#include "public/task.h"
 #include "public/Utils.h"
 #include "public/CheckMatrix.h"
 
@@ -112,8 +112,6 @@ int RemoveSingletonOrEmptyCols(double *pAd,double **A, double **Ad, int m, int n
         return new_col_index; // 成功
     }
 }
-
-
 
 // 比较两个向量比值是否相等
 int CompareRows( double *col1, const double *col2, int m) {

@@ -1,4 +1,4 @@
-
+#pragma once
 #define DPAR_PRESOLVE_TOL_AIJ 1.0e-12
 
 #define EMPTY_ROW       0
