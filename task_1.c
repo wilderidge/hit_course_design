@@ -3,8 +3,8 @@
 #include "public/Utils.h"
 #include "public/CheckMatrix.h"
 
-#define M 10
-#define N 10
+#define M 100
+#define N 100
 
 void matrix_check(double **A, double *B, double *C)
 {
