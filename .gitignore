@@ -1,4 +1,6 @@
 build/
 bin/
+cmake-build-debug/
+.idea/*
 .vscode/*
 *.exe
