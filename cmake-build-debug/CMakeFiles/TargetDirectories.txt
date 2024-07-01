@@ -1,8 +1,0 @@
-D:/game/college_course/Grade_3_Spring/shi_jian/code/cmake-build-debug/CMakeFiles/task_1.dir
-D:/game/college_course/Grade_3_Spring/shi_jian/code/cmake-build-debug/CMakeFiles/task_2.dir
-D:/game/college_course/Grade_3_Spring/shi_jian/code/cmake-build-debug/CMakeFiles/task_3.dir
-D:/game/college_course/Grade_3_Spring/shi_jian/code/cmake-build-debug/CMakeFiles/edit_cache.dir
-D:/game/college_course/Grade_3_Spring/shi_jian/code/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-D:/game/college_course/Grade_3_Spring/shi_jian/code/cmake-build-debug/test/CMakeFiles/test.dir
-D:/game/college_course/Grade_3_Spring/shi_jian/code/cmake-build-debug/test/CMakeFiles/edit_cache.dir
-D:/game/college_course/Grade_3_Spring/shi_jian/code/cmake-build-debug/test/CMakeFiles/rebuild_cache.dir

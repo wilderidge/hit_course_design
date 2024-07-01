@@ -1,7 +1,0 @@
-# ninja log v5
-6	159	7415171954631462	CMakeFiles/task_1.dir/task_1.c.obj	6c11c8a20fac16f
-12	203	7415171955081460	CMakeFiles/task_1.dir/public/Utils.c.obj	b04140db6a3a8545
-204	363	7415171956652627	D:/game/college_course/Grade_3_Spring/shi_jian/code/bin/task_1.exe	20a38f50d09e0f97
-17	175	7415172511189669	CMakeFiles/task_2.dir/public/Utils.c.obj	2d6071afe54fa6e0
-10	183	7415172511275368	CMakeFiles/task_2.dir/task_2.c.obj	7a70dae50e9f5716
-183	346	7415172512858230	D:/game/college_course/Grade_3_Spring/shi_jian/code/bin/task_2.exe	160ebaa4cb0b902d
