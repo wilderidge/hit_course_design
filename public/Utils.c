@@ -13,6 +13,7 @@
     参数：
         A: M*N 矩阵
         M, N：矩阵维度
+        filename:矩阵文件的路径
 ******************************************************************************/
 void ReadMatrix(double **A, int M, int N, char* filename) {
     FILE *fp = fopen(filename, "rb"); // 以二进制模式打开文件
