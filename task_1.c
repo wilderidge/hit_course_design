@@ -202,8 +202,9 @@ int CheckEmptyAndSingletonCols(double *C, int m, int n, ColInfo **Cols, int *Col
 
 int main(int argc, char *argv[])
 {
-    clock_t start, end;
-    double cpu_time_used;
+    int nThread = 8;             //线程数
+    double total_time_used = 0.0;
+    int iterations = 500;        //执行测试的次数
 
     double **A = malloc(M * sizeof(double *));
     double *B = malloc(M * sizeof(double));
@@ -224,40 +225,74 @@ int main(int argc, char *argv[])
         A[i] = &(pA[i * N]);
     }
 
-    start = clock();
     // RandomMatrix(A, M, N);
     ReadMatrix(A, M, N, "../A(2262x9799).80bau3b.bin");
 
+    for (int iter = 0; iter < iterations; iter++) {
+        clock_t start, end;
+        double cpu_time_used;
+        start = clock();
+    
+        RowsSize = 0;
+        ColsSize = 0;
 
-    matrix_check(A, B, C, 1);
+        matrix_check(A, B, C, nThread);
 
-    // start = clock();
-    // matrix_check(A, B, C, 2);
-    // end = clock();
+        // start = clock();
+        // matrix_check(A, B, C, 2);
+        // end = clock();
 
-    // cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    // printf("函数执行耗时: %f 秒\n", cpu_time_used);
+        // cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+        // printf("函数执行耗时: %f 秒\n", cpu_time_used);
 
-    // printf("B: ");
-    // for (int i = 0; i < M; i++) {
-    //     printf("%f ", B[i]);
-    // }
-    // printf("\nC: ");
-    // for (int j = 0; j < N; j++) {
-    //     printf("%f ", C[j]);
-    // }
-    // printf("\n");
+        // printf("B: ");
+        // for (int i = 0; i < M; i++) {
+        //     printf("%f ", B[i]);
+        // }
+        // printf("\nC: ");
+        // for (int j = 0; j < N; j++) {
+        //     printf("%f ", C[j]);
+        // }
+        // printf("\n");
 
-    CheckEmptyAndSingletonRows(B, M, N, &Rows, &RowsSize, 1);
-    printf("RowsSize: %d\n", RowsSize);
+        CheckEmptyAndSingletonRows(B, M, N, &Rows, &RowsSize, 1);
+        // printf("RowsSize: %d\n", RowsSize);
 
-    CheckEmptyAndSingletonCols(C, M, N, &Cols, &ColsSize, 1);
-    printf("ColsSize: %d\n", ColsSize);
+        CheckEmptyAndSingletonCols(C, M, N, &Cols, &ColsSize, 1);
+        // printf("ColsSize: %d\n", ColsSize);
 
-    end = clock();
+        end = clock();
 
-    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    printf("函数执行耗时: %f 秒\n", cpu_time_used);
+        cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+        total_time_used += cpu_time_used;
+    }
+
+    double average_time_used = total_time_used / iterations;
+    printf("多线程平均函数执行耗时: %f 秒\n", average_time_used);
+
+    total_time_used = 0;
+    for (int iter = 0; iter < iterations; iter++) {
+        clock_t start, end;
+        double cpu_time_used;
+        start = clock();
+    
+        RowsSize = 0;
+        ColsSize = 0;
+
+        matrix_check(A, B, C, 1);
+
+        CheckEmptyAndSingletonRows(B, M, N, &Rows, &RowsSize, 1);
+
+        CheckEmptyAndSingletonCols(C, M, N, &Cols, &ColsSize, 1);
+
+        end = clock();
+
+        cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+        total_time_used += cpu_time_used;
+    }
+
+    average_time_used = total_time_used / iterations;
+    printf("单线程平均函数执行耗时: %f 秒\n", average_time_used);
 
     free(A);
     free(B);
