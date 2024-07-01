@@ -1,28 +1,73 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
+#include <time.h>
 #include "public/Utils.h"
 #include "public/CheckMatrix.h"
 
-#define M 100
-#define N 100
+#define M 10000
+#define N 10000
 
-void matrix_check(double **A, double *B, double *C)
-{
-    // 初始化B和C向量
-    for (int i = 0; i < M; i++) {
-        B[i] = 0;
-    }
-    for (int j = 0; j < N; j++) {
-        C[j] = 0;
-    }
-
-    // 遍历矩阵A的每一行和每一列
-    for (int i = 0; i < M; i++) {
+void *thread_function_check(void *arg) {
+    ThreadData_check_task1 *data = (ThreadData_check_task1 *)arg;
+    for (int i = data->start_row; i < data->end_row; i++) {
         for (int j = 0; j < N; j++) {
-            if (A[i][j] != 0) {
-                B[i] += 1; // 如果当前行的元素不为0，增加B[i]
-                C[j] += 1; // 如果当前列的元素不为0，增加C[j]
+            if (data->A[i][j] != 0) {
+                data->B[i] += 1;
+                data->C[j] += 1;
             }
+        }
+    }
+    pthread_exit(NULL);
+}
+
+void *threadFunction(void *arg) {
+    ThreadData_task1 *data = (ThreadData_task1 *)arg;
+    data->localRowsSize = 0;
+    for (int i = data->startIdx; i < data->endIdx; i++) {
+        if (data->B[i] == 0 || data->B[i] == 1) {
+            data->localRows[data->localRowsSize].type = (data->B[i] == 0) ? EMPTY_ROW : SINGLETON_ROW;
+            data->localRows[data->localRowsSize].irow = i;
+            data->localRowsSize++;
+        }
+    }
+    pthread_exit(NULL);
+}
+
+void matrix_check(double **A, double *B, double *C, int nThread)
+{   //经试验，多线程带来的性能提升无法抵消多线程带来的额外开销，故此处最好是用单线程
+    if (nThread == 1)
+    {
+        for (int i = 0; i < M; i++) {
+            B[i] = 0;
+        }
+        for (int j = 0; j < N; j++) {
+            C[j] = 0;
+        }
+        for (int i = 0; i < M; i++) {
+            for (int j = 0; j < N; j++) {
+                if (A[i][j] != 0) {
+                    B[i] += 1;
+                    C[j] += 1;
+                }
+            }
+        }
+    }
+    else
+    {
+        pthread_t threads[nThread];
+        ThreadData_check_task1 thread_data[nThread];
+        int rows_per_thread = M / nThread;
+        for (int i = 0; i < nThread; i++) {
+            thread_data[i].start_row = i * rows_per_thread;
+            thread_data[i].end_row = (i + 1) * rows_per_thread;
+            thread_data[i].A = A;
+            thread_data[i].B = B;
+            thread_data[i].C = C;
+            pthread_create(&threads[i], NULL, thread_function_check, (void *)&thread_data[i]);
+        }
+        for (int i = 0; i < nThread; i++) {
+            pthread_join(threads[i], NULL);
         }
     }
 }
@@ -55,7 +100,26 @@ int CheckEmptyAndSingletonRows(double *B, int m, int n, RowInfo **Rows, int *Row
     }
     else
     {
-        // 多线程处理逻辑
+        pthread_t threads[nThread];
+        ThreadData_task1 threadData[nThread];
+        int segmentSize = n / nThread;
+        for (int i = 0; i < nThread; i++) {
+            threadData[i].B = B;
+            threadData[i].startIdx = i * segmentSize;
+            threadData[i].endIdx = (i == nThread - 1) ? n : (i + 1) * segmentSize;
+            threadData[i].localRows = malloc(n * sizeof(RowInfo)); // 预分配足够的空间
+            pthread_create(&threads[i], NULL, threadFunction, (void *)&threadData[i]);
+        }
+        *RowsSize = 0;
+        *Rows = malloc(n * sizeof(RowInfo)); // 预分配足够的空间
+        for (int i = 0; i < nThread; i++) {
+            pthread_join(threads[i], NULL);
+            for (int j = 0; j < threadData[i].localRowsSize; j++) {
+                (*Rows)[*RowsSize] = threadData[i].localRows[j];
+                (*RowsSize)++;
+            }
+            free(threadData[i].localRows);
+        }
     }
     return 0;
 }
@@ -95,6 +159,9 @@ int CheckEmptyAndSingletonCols(double *C, int m, int n, ColInfo **Cols, int *Col
 
 int main(int argc, char *argv[])
 {
+    clock_t start, end;
+    double cpu_time_used;
+
     double **A = malloc(M * sizeof(double *));
     double *B = malloc(M * sizeof(double));
     double *C = malloc(N * sizeof(double));
@@ -116,17 +183,29 @@ int main(int argc, char *argv[])
 
     RandomMatrix(A, M, N);
 
-    matrix_check(A, B, C);
+    start = clock();
+    matrix_check(A, B, C, 1);
+    end = clock();
 
-    printf("B: ");
-    for (int i = 0; i < M; i++) {
-        printf("%f ", B[i]);
-    }
-    printf("\nC: ");
-    for (int j = 0; j < N; j++) {
-        printf("%f ", C[j]);
-    }
-    printf("\n");
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    printf("函数执行耗时: %f 秒\n", cpu_time_used);
+
+    // start = clock();
+    // matrix_check(A, B, C, 2);
+    // end = clock();
+
+    // cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    // printf("函数执行耗时: %f 秒\n", cpu_time_used);
+
+    // printf("B: ");
+    // for (int i = 0; i < M; i++) {
+    //     printf("%f ", B[i]);
+    // }
+    // printf("\nC: ");
+    // for (int j = 0; j < N; j++) {
+    //     printf("%f ", C[j]);
+    // }
+    // printf("\n");
 
     CheckEmptyAndSingletonRows(B, M, N, &Rows, &RowsSize, 1);
     printf("RowsSize: %d\n", RowsSize);

@@ -10,7 +10,7 @@
         A: M*N 矩阵
         M, N：矩阵维度
 ******************************************************************************/
-#define ZERO_PROB 0.2 // 20%的概率生成0
+#define ZERO_PROB 0.5 // 20%的概率生成0
 void RandomMatrix(double **A, int M, int N)
 {
     int     i, j;

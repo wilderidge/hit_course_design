@@ -30,6 +30,22 @@ typedef struct{
     double  v;
 }DupColInfo;
 
+typedef struct {
+    int start_row;
+    int end_row;
+    double **A;
+    double *B;
+    double *C;
+} ThreadData_check_task1;
+
+typedef struct {
+    double *B;
+    int startIdx;
+    int endIdx;
+    RowInfo *localRows;
+    int localRowsSize;
+} ThreadData_task1;
+
 
 // int CheckEmptyAndSingletonRows(double **A, int m, int n, RowInfo *Rows, int nThread);
 // int CheckEmptyAndSingletonCols(double **A, int m, int n, ColInfo *Cols, int nThread);
