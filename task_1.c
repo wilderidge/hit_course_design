@@ -183,12 +183,7 @@ int main(int argc, char *argv[])
 
     RandomMatrix(A, M, N);
 
-    start = clock();
     matrix_check(A, B, C, 1);
-    end = clock();
-
-    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    printf("函数执行耗时: %f 秒\n", cpu_time_used);
 
     // start = clock();
     // matrix_check(A, B, C, 2);
@@ -207,8 +202,14 @@ int main(int argc, char *argv[])
     // }
     // printf("\n");
 
+    start = clock();
+
     CheckEmptyAndSingletonRows(B, M, N, &Rows, &RowsSize, 1);
     printf("RowsSize: %d\n", RowsSize);
+    end = clock();
+
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    printf("函数执行耗时: %f 秒\n", cpu_time_used);
     CheckEmptyAndSingletonCols(C, M, N, &Cols, &ColsSize, 1);
     printf("ColsSize: %d\n", ColsSize);
 
