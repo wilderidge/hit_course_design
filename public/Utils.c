@@ -1,7 +1,47 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <time.h>
 #include <pthread.h>
 #include "Utils.h"
+
+#define ZERO_PROB 0.5 // 20%的概率生成0
+
+
+/******************************************************************************
+ 读取特定矩阵文件
+
+    参数：
+        A: M*N 矩阵
+        M, N：矩阵维度
+******************************************************************************/
+void ReadMatrix(double **A, int M, int N, char* filename) {
+    FILE *fp = fopen(filename, "rb"); // 以二进制模式打开文件
+    if (fp == NULL) {
+        fprintf(stderr, "无法打开文件 %s\n", filename);
+        exit(1);
+    }
+
+    for (int i = 0; i < M; i++) {
+        // 为矩阵的每一行分配内存
+        A[i] = (double *)malloc(N * sizeof(double));
+        if (A[i] == NULL) {
+            fprintf(stderr, "内存分配失败\n");
+            fclose(fp); // 确保在退出前关闭文件
+            exit(1);
+        }
+
+        // 从文件中读取一行数据
+        size_t readCount = fread(A[i], sizeof(double), N, fp);
+        if (readCount < N) {
+            fprintf(stderr, "文件格式错误或提前结束\n");
+            fclose(fp); // 确保在退出前关闭文件
+            exit(1);
+        }
+    }
+
+    fclose(fp); // 完成读取后关闭文件
+}
+
 
 /******************************************************************************
  生成随机矩阵
@@ -10,7 +50,6 @@
         A: M*N 矩阵
         M, N：矩阵维度
 ******************************************************************************/
-#define ZERO_PROB 0.5 // 20%的概率生成0
 void RandomMatrix(double **A, int M, int N)
 {
     int     i, j;
