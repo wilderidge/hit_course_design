@@ -15,6 +15,7 @@ typedef struct {
     int         N;
 }MatMulThreadInfo;
 
+void ReadMatrix(double **A, int M, int N, char* filename);    //从文件中读取矩阵
 void RandomMatrix(double **A, int M, int N);        //随机生成矩阵
 void RandomVector(double *a, int N);                //随机生成向量
 int Matrix_Matrix_Multiplication(double **A, double **B, double **C, int M, int K, int N, int nThread);     //单线程、多线程矩阵-矩阵乘法

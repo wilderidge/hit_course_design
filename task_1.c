@@ -5,8 +5,8 @@
 #include "public/Utils.h"
 #include "public/CheckMatrix.h"
 
-#define M 10000
-#define N 10000
+#define M 2262
+#define N 9779
 
 void *thread_function_check(void *arg) {
     ThreadData_check_task1 *data = (ThreadData_check_task1 *)arg;
@@ -21,14 +21,27 @@ void *thread_function_check(void *arg) {
     pthread_exit(NULL);
 }
 
-void *threadFunction(void *arg) {
-    ThreadData_task1 *data = (ThreadData_task1 *)arg;
+void *threadFunction_Rows(void *arg) {
+    ThreadData_task_Rows *data = (ThreadData_task_Rows *)arg;
     data->localRowsSize = 0;
     for (int i = data->startIdx; i < data->endIdx; i++) {
         if (data->B[i] == 0 || data->B[i] == 1) {
             data->localRows[data->localRowsSize].type = (data->B[i] == 0) ? EMPTY_ROW : SINGLETON_ROW;
             data->localRows[data->localRowsSize].irow = i;
             data->localRowsSize++;
+        }
+    }
+    pthread_exit(NULL);
+}
+
+void* threadFunction_Cols(void *arg) {
+    ThreadData_task_Cols *data = (ThreadData_task_Cols *)arg;
+    data->partialSize = 0;
+    for (int j = data->startCol; j < data->endCol; j++) {
+        if (data->C[j] == 0 || data->C[j] == 1) {
+            data->partialCols[data->partialSize].type = (data->C[j] == 0) ? EMPTY_COL : SINGLETON_COL;
+            data->partialCols[data->partialSize].jcol = j;
+            data->partialSize++;
         }
     }
     pthread_exit(NULL);
@@ -101,14 +114,14 @@ int CheckEmptyAndSingletonRows(double *B, int m, int n, RowInfo **Rows, int *Row
     else
     {
         pthread_t threads[nThread];
-        ThreadData_task1 threadData[nThread];
+        ThreadData_task_Rows threadData[nThread];
         int segmentSize = n / nThread;
         for (int i = 0; i < nThread; i++) {
             threadData[i].B = B;
             threadData[i].startIdx = i * segmentSize;
             threadData[i].endIdx = (i == nThread - 1) ? n : (i + 1) * segmentSize;
             threadData[i].localRows = malloc(n * sizeof(RowInfo)); // 预分配足够的空间
-            pthread_create(&threads[i], NULL, threadFunction, (void *)&threadData[i]);
+            pthread_create(&threads[i], NULL, threadFunction_Rows, (void *)&threadData[i]);
         }
         *RowsSize = 0;
         *Rows = malloc(n * sizeof(RowInfo)); // 预分配足够的空间
@@ -152,7 +165,37 @@ int CheckEmptyAndSingletonCols(double *C, int m, int n, ColInfo **Cols, int *Col
     }
     else
     {
-        // 多线程处理逻辑
+        *ColsSize = 0;
+        *Cols = malloc(n * sizeof(ColInfo));
+        if (*Cols == NULL) {
+            return -1;
+        }
+
+        pthread_t threads[nThread];
+        ThreadData_task_Cols threadData[nThread];
+        int colsPerThread = n / nThread;
+        int extraCols = n % nThread;
+
+        for (int i = 0; i < nThread; i++) {
+            int startCol = i * colsPerThread;
+            int endCol = startCol + colsPerThread + (i < extraCols ? 1 : 0);
+            threadData[i] = (ThreadData_task_Cols){C, startCol, endCol, malloc((endCol - startCol) * sizeof(ColInfo)), 0};
+            pthread_create(&threads[i], NULL, threadFunction_Cols, &threadData[i]);
+        }
+
+        for (int i = 0; i < nThread; i++) {
+            pthread_join(threads[i], NULL);
+            for (int j = 0; j < threadData[i].partialSize; j++) {
+                (*Cols)[*ColsSize] = threadData[i].partialCols[j];
+                (*ColsSize)++;
+            }
+            free(threadData[i].partialCols);
+        }
+
+        *Cols = realloc(*Cols, (*ColsSize) * sizeof(ColInfo));
+        if (*Cols == NULL && *ColsSize > 0) {
+            return -1;
+        }
     }
     return 0;
 }
@@ -181,7 +224,10 @@ int main(int argc, char *argv[])
         A[i] = &(pA[i * N]);
     }
 
-    RandomMatrix(A, M, N);
+    start = clock();
+    // RandomMatrix(A, M, N);
+    ReadMatrix(A, M, N, "../A(2262x9799).80bau3b.bin");
+
 
     matrix_check(A, B, C, 1);
 
@@ -202,16 +248,16 @@ int main(int argc, char *argv[])
     // }
     // printf("\n");
 
-    start = clock();
-
     CheckEmptyAndSingletonRows(B, M, N, &Rows, &RowsSize, 1);
     printf("RowsSize: %d\n", RowsSize);
+
+    CheckEmptyAndSingletonCols(C, M, N, &Cols, &ColsSize, 1);
+    printf("ColsSize: %d\n", ColsSize);
+
     end = clock();
 
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
     printf("函数执行耗时: %f 秒\n", cpu_time_used);
-    CheckEmptyAndSingletonCols(C, M, N, &Cols, &ColsSize, 1);
-    printf("ColsSize: %d\n", ColsSize);
 
     free(A);
     free(B);

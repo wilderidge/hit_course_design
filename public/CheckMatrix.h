@@ -44,7 +44,15 @@ typedef struct {
     int endIdx;
     RowInfo *localRows;
     int localRowsSize;
-} ThreadData_task1;
+} ThreadData_task_Rows;
+
+typedef struct {
+    double *C;
+    int startCol;
+    int endCol;
+    ColInfo *partialCols;
+    int partialSize;
+} ThreadData_task_Cols;
 
 
 
