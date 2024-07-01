@@ -22,24 +22,21 @@ void ReadMatrix(double **A, int M, int N, char* filename) {
     }
 
     for (int i = 0; i < M; i++) {
-        // 为矩阵的每一行分配内存
         A[i] = (double *)malloc(N * sizeof(double));
         if (A[i] == NULL) {
             fprintf(stderr, "内存分配失败\n");
-            fclose(fp); // 确保在退出前关闭文件
+            fclose(fp);
             exit(1);
         }
 
-        // 从文件中读取一行数据
         size_t readCount = fread(A[i], sizeof(double), N, fp);
         if (readCount < N) {
             fprintf(stderr, "文件格式错误或提前结束\n");
-            fclose(fp); // 确保在退出前关闭文件
+            fclose(fp);
             exit(1);
         }
     }
-
-    fclose(fp); // 完成读取后关闭文件
+    fclose(fp); 
 }
 
 
