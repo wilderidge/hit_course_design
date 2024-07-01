@@ -2,6 +2,8 @@
 #define LOWER_BOUND     -10
 #define UPPER_BOUND     +10
 
+#include "global_settings.h"
+
 typedef struct {
     double      **A;
     double      **B;
