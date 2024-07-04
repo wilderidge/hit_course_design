@@ -6,7 +6,7 @@ project("task")
 set(PROJECT_NAME "task_")
 
 # C Compiler settings
-add_compile_options(-Werror -g)
+add_compile_options(-Werror -g -mavx2)
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
 set(CMAKE_BUILD_TYPE Debug)                             # Type : Debug
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)   # Bin Path : bin
