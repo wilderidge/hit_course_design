@@ -259,33 +259,6 @@ int main(int argc, char *argv[])
     
         RowsSize = 0;
         ColsSize = 0;
-        
-        matrix_check(A, B, C, nThread, M, N, 1);
-
-        CheckEmptyAndSingletonRows(B, M, N, &Rows, &RowsSize, 1);
-        // printf("RowsSize: %d\n", RowsSize);
-
-        CheckEmptyAndSingletonCols(C, M, N, &Cols, &ColsSize, 1);
-        // printf("ColsSize: %d\n", ColsSize);
-        
-
-        end = clock();
-
-        cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-        total_time_used += cpu_time_used;
-    }
-
-    double average_time_used = total_time_used / iterations;
-    printf("M: %d, N: %d, 八线程平均函数执行耗时: %f 秒\n", M,N,average_time_used);
-
-    total_time_used = 0;
-    for (int iter = 0; iter < iterations; iter++) {
-        clock_t start, end;
-        double cpu_time_used;
-        start = clock();
-    
-        RowsSize = 0;
-        ColsSize = 0;
 
         matrix_check(A, B, C, 1, M, N, 1);
 
@@ -301,9 +274,8 @@ int main(int argc, char *argv[])
         total_time_used += cpu_time_used;
     }
 
-    average_time_used = total_time_used / iterations;
+    double average_time_used = total_time_used / iterations;
     printf("M: %d, N: %d, 单线程平均函数执行耗时: %f 秒\n", M,N,average_time_used);
-
 
     total_time_used = 0;
     for (int iter = 0; iter < iterations; iter++) {
@@ -329,7 +301,35 @@ int main(int argc, char *argv[])
     }
 
     average_time_used = total_time_used / iterations;
-    printf("M: %d, N: %d, 单线程二循环展开平均函数执行耗时: %f 秒\n\n", M,N,average_time_used);
+    printf("M: %d, N: %d, 单线程二循环展开平均函数执行耗时: %f 秒\n", M,N,average_time_used);
+
+
+    total_time_used = 0;
+    for (int iter = 0; iter < iterations; iter++) {
+        clock_t start, end;
+        double cpu_time_used;
+        start = clock();
+    
+        RowsSize = 0;
+        ColsSize = 0;
+        
+        matrix_check(A, B, C, nThread, M, N, 1);
+
+        CheckEmptyAndSingletonRows(B, M, N, &Rows, &RowsSize, 1);
+        // printf("RowsSize: %d\n", RowsSize);
+
+        CheckEmptyAndSingletonCols(C, M, N, &Cols, &ColsSize, 1);
+        // printf("ColsSize: %d\n", ColsSize);
+        
+
+        end = clock();
+
+        cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+        total_time_used += cpu_time_used;
+    }
+
+    average_time_used = total_time_used / iterations;
+    printf("M: %d, N: %d, 八线程平均函数执行耗时: %f 秒\n\n", M,N,average_time_used);
 
     free(A);
     free(B);
