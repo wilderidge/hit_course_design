@@ -8,5 +8,5 @@ add_executable(test ${PROJECT_SOURCE_DIR}/test/test.cc ${PROJECT_SOURCE_DIR}/tes
 
 target_link_libraries(test PUBLIC
     gtest
-    pthread 
+    pthread
 )

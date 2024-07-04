@@ -1,6 +1,5 @@
-echo "开始执行task1_test，结果将被写入到output/task1.txt"
+echo "开始执行task1_test结果将被写入到output/task1.txt"
 echo "Task 1 Output" > output/task1.txt
-
 ./bin/task_1 "./data/A(100x200).bin" 100 200 >> output/task1.txt 2>&1
 ./bin/task_1 "./data/A(700x1500).bin" 700 1500 >> output/task1.txt 2>&1
 ./bin/task_1 "./data/A(821x1571).25fv47.bin" 821 1571 >> output/task1.txt 2>&1

@@ -241,8 +241,6 @@ int main(int argc, char *argv[])
 
     // RandomMatrix(A, M, N);
     ReadMatrix(A, M, N, filename);
-
-
     for (int iter = 0; iter < iterations; iter++) {
         clock_t start, end;
         double cpu_time_used;
@@ -252,26 +250,7 @@ int main(int argc, char *argv[])
         ColsSize = 0;
         
 
-        matrix_check(A, B, C, nThread, M, N);
-            
-
-        // start = clock();
-        // matrix_check(A, B, C, 2);
-        // end = clock();
-
-        // cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-        // printf("函数执行耗时: %f 秒\n", cpu_time_used);
-
-        // printf("B: ");
-        // for (int i = 0; i < M; i++) {
-        //     printf("%f ", B[i]);
-        // }
-        // printf("\nC: ");
-        // for (int j = 0; j < N; j++) {
-        //     printf("%f ", C[j]);
-        // }
-        // printf("\n");
-
+        matrix_check(A, B, C, nThread, M, N);         
         CheckEmptyAndSingletonRows(B, M, N, &Rows, &RowsSize, 1);
         // printf("RowsSize: %d\n", RowsSize);
 
