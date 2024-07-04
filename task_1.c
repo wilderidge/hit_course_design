@@ -252,8 +252,6 @@ int main(int argc, char *argv[])
 
     // RandomMatrix(A, M, N);
     ReadMatrix(A, M, N, filename);
-
-
     for (int iter = 0; iter < iterations; iter++) {
         clock_t start, end;
         double cpu_time_used;
