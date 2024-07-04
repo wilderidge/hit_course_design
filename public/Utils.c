@@ -33,6 +33,9 @@ void ReadMatrix(double **A, int M, int N, char* filename) {
 
         // 从文件中读取一行数据
         size_t readCount = fread(A[i], sizeof(double), N, fp);
+        // for(int k = 0;k<N;k++)
+        //     printf("%lf\t\t", A[i][k]);
+        // printf("\n");
         if (readCount < N) {
             fprintf(stderr, "文件格式错误或提前结束\n");
             fclose(fp); // 确保在退出前关闭文件
