@@ -5,13 +5,13 @@
 #include "public/Utils.h"
 #include "public/CheckMatrix.h"
 
-#define M 2262
-#define N 9779
+// #define M 2262
+// #define N 9779
 
 void *thread_function_check(void *arg) {
     ThreadData_check_task1 *data = (ThreadData_check_task1 *)arg;
     for (int i = data->start_row; i < data->end_row; i++) {
-        for (int j = 0; j < N; j++) {
+        for (int j = 0; j < data->N; j++) { // 使用 data->N 而不是全局的 N
             if (data->A[i][j] != 0) {
                 data->B[i] += 1;
                 data->C[j] += 1;
@@ -47,7 +47,7 @@ void* threadFunction_Cols(void *arg) {
     pthread_exit(NULL);
 }
 
-void matrix_check(double **A, double *B, double *C, int nThread)
+void matrix_check(double **A, double *B, double *C, int nThread, int M, int N)
 {   //经试验，多线程带来的性能提升无法抵消多线程带来的额外开销，故此处最好是用单线程
     if (nThread == 1)
     {
@@ -77,6 +77,7 @@ void matrix_check(double **A, double *B, double *C, int nThread)
             thread_data[i].A = A;
             thread_data[i].B = B;
             thread_data[i].C = C;
+            thread_data[i].N = N;
             pthread_create(&threads[i], NULL, thread_function_check, (void *)&thread_data[i]);
         }
         for (int i = 0; i < nThread; i++) {
@@ -202,6 +203,18 @@ int CheckEmptyAndSingletonCols(double *C, int m, int n, ColInfo **Cols, int *Col
 
 int main(int argc, char *argv[])
 {
+    char *filename = "../A(2262x9799).80bau3b.bin";
+    int M = 2262;
+    int N = 9799;
+    if(argc == 4)
+    {
+        filename = argv[1];
+        M = atoi(argv[2]);
+        N = atoi(argv[3]);
+    }
+    else if(argc != 4 && argc != 1)
+        return 0;
+
     int nThread = 8;             //线程数
     double total_time_used = 0.0;
     int iterations = 500;        //执行测试的次数
@@ -215,6 +228,7 @@ int main(int argc, char *argv[])
     int RowsSize = 0; // 用于存储空行和单元素行的数量
     int ColsSize = 0; // 用于存储空列和单元素列的数量
 
+
     if (A == NULL || B == NULL || C == NULL || pA == NULL || Rows == NULL || Cols == NULL) {
         printf("Malloc matrix failed!\n");
         free(A); free(B); free(C); free(pA); free(Rows); free(Cols);
@@ -226,7 +240,8 @@ int main(int argc, char *argv[])
     }
 
     // RandomMatrix(A, M, N);
-    ReadMatrix(A, M, N, "../A(2262x9799).80bau3b.bin");
+    ReadMatrix(A, M, N, filename);
+
 
     for (int iter = 0; iter < iterations; iter++) {
         clock_t start, end;
@@ -235,8 +250,10 @@ int main(int argc, char *argv[])
     
         RowsSize = 0;
         ColsSize = 0;
+        
 
-        matrix_check(A, B, C, nThread);
+        matrix_check(A, B, C, nThread, M, N);
+            
 
         // start = clock();
         // matrix_check(A, B, C, 2);
@@ -260,6 +277,7 @@ int main(int argc, char *argv[])
 
         CheckEmptyAndSingletonCols(C, M, N, &Cols, &ColsSize, 1);
         // printf("ColsSize: %d\n", ColsSize);
+        
 
         end = clock();
 
@@ -279,7 +297,7 @@ int main(int argc, char *argv[])
         RowsSize = 0;
         ColsSize = 0;
 
-        matrix_check(A, B, C, 1);
+        matrix_check(A, B, C, 1, M, N);
 
         CheckEmptyAndSingletonRows(B, M, N, &Rows, &RowsSize, 1);
 
