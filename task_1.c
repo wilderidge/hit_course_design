@@ -275,7 +275,7 @@ int main(int argc, char *argv[])
     }
 
     double average_time_used = total_time_used / iterations;
-    printf("M: %d, N: %d, 单线程平均函数执行耗时: %f 秒\n", M,N,average_time_used);
+    printf("1. M: %d, N: %d, 单线程平均函数执行耗时: %f 秒\n", M,N,average_time_used);
 
     total_time_used = 0;
     for (int iter = 0; iter < iterations; iter++) {
@@ -301,7 +301,7 @@ int main(int argc, char *argv[])
     }
 
     average_time_used = total_time_used / iterations;
-    printf("M: %d, N: %d, 单线程二循环展开平均函数执行耗时: %f 秒\n", M,N,average_time_used);
+    printf("2. M: %d, N: %d, 单线程二循环展开平均函数执行耗时: %f 秒\n", M,N,average_time_used);
 
 
     total_time_used = 0;
@@ -329,7 +329,7 @@ int main(int argc, char *argv[])
     }
 
     average_time_used = total_time_used / iterations;
-    printf("M: %d, N: %d, 八线程平均函数执行耗时: %f 秒\n\n", M,N,average_time_used);
+    printf("3. M: %d, N: %d, 八线程平均函数执行耗时: %f 秒\n\n", M,N,average_time_used);
 
     free(A);
     free(B);
