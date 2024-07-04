@@ -5,8 +5,8 @@
 #include "public/Utils.h"
 #include "public/CheckMatrix.h"
 
-#define M 10
-#define N 10
+#define M 1000
+#define N 1000
 
 
 
@@ -35,7 +35,7 @@ void transposeMatrix(double **A, double **At, int m, int n) {
 int CompareColumns( double *col1, const double *col2, int m) {
     int i = 0;
     double ratio = 0;
-    for (i; i < m; i++) {
+    for (; i < m; i++) {
         if ((col2[i] == 0 && col1[i] != 0)||(col1[i] == 0 && col2[i] != 0)) {
             return 0; // 不相等
         }
@@ -123,27 +123,31 @@ int main(int argc, char *argv[]) {
     transposeMatrix(A, At, M, N);
 
     // 打印矩阵A
-    printf("Matrix A:\n");
-    for (int i = 0; i < M; i++) {
-        for (int j = 0; j < N; j++) {
-            printf("%f ", A[i][j]);
-        }
-        printf("\n");
-    }
+    // printf("Matrix A:\n");
+    // for (int i = 0; i < M; i++) {
+    //     for (int j = 0; j < N; j++) {
+    //         printf("%f ", A[i][j]);
+    //     }
+    //     printf("\n");
+    // }
 
-    // 打印转置后的矩阵 At
-    printf("Transposed Matrix At:\n");
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < M; j++) {
-            printf("%f ", At[i][j]);
-        }
-        printf("\n");
-    }
-
-
+    // // 打印转置后的矩阵 At
+    // printf("Transposed Matrix At:\n");
+    // for (int i = 0; i < N; i++) {
+    //     for (int j = 0; j < M; j++) {
+    //         printf("%f ", At[i][j]);
+    //     }
+    //     printf("\n");
+    // }
     // 检测重复列，这里使用单线程
-    int duplicatedColsCount = CheckDuplicatedColumns(At, M, N, &Cols, 1);
-
+    clock_t start, end;
+    start = clock();
+    double cpu_time_used;
+    int iterations = 500;  
+    int duplicatedColsCount;
+    for(int i= 0;i<iterations;i++)
+        duplicatedColsCount = CheckDuplicatedColumns(At, M, N, &Cols, 1);
+    end = clock();
     printf("duplicatedColsCount is:%d\n",duplicatedColsCount );
 
     if (duplicatedColsCount < 0) {
@@ -156,7 +160,8 @@ int main(int argc, char *argv[]) {
             printf("Columns %d and %d are duplicated.\n", Cols[i].jcol, Cols[i].kcol);
         }
     }
-
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    printf("time used is %f\n",cpu_time_used);
     // 释放内存
     free(A);
     free(At);

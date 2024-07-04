@@ -31,3 +31,7 @@ cmake -B build
 cmake --build build
 ```
 可执行文件在bin文件夹中
+
+## GPU编译
+nvcc task_1_gpu.cu ./public/Utils.o -o ./bin/task_1_gpu
+编译时需要链接接Utils.o库否则编译出错

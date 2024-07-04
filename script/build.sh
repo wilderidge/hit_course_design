@@ -6,3 +6,6 @@ gcc task_2.c public/Utils.c -o bin/task_2
 
 # 编译测试
 g++ test/test.cc -o bin/test -lgtest
+
+# GPU编译
+nvcc task_1_gpu.cu ./public/Utils.o -o ./bin/task_1_gpu

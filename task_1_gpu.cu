@@ -2,8 +2,8 @@
 #include <iostream>
 #include <cstdlib>
 #include <chrono>
-#include "public/Utils.h"
 #include "public/CheckMatrix.h"
+#include "public/Utils.h"
 
 // CUDA 内核函数：检查空行和单元素行
 __global__ void CheckRowsKernel(double *B, int m, int n, RowInfo *rows, int *rowCount) {
@@ -125,7 +125,7 @@ int CheckEmptyAndSingletonCols(double *C, int m, int n, ColInfo **Cols, int *Col
 
 
 int main(int argc, char *argv[]) {
-    char* filename;
+    char *filename = "../A(2262x9799).80bau3b.bin";
     int M = 2262;
     int N = 9799;
     if (argc == 4) {
@@ -153,7 +153,7 @@ int main(int argc, char *argv[]) {
         pA[i] = &(A[i * N]);
     }
     // 从文件读取矩阵数据
-    ReadMatrix(pA, M, N, filename);
+    ReadMatrix(pA, M, N,filename);
 
     // 执行测试并计时
     for (int iter = 0; iter < iterations; ++iter) {
@@ -163,26 +163,24 @@ int main(int argc, char *argv[]) {
         ColsSize = 0;
         CheckEmptyAndSingletonRows(A, M, N, &Rows, &RowsSize);
         CheckEmptyAndSingletonCols(A, M, N, &Cols, &ColsSize);
-
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> elapsed = end - start;
         total_time_used += elapsed.count();
-
-        // 输出检测结果
-        if (iter == 0) { // 仅在第一次迭代输出检测结果
-            std::cout << "Empty and singleton rows:\n";
-            for (int i = 0; i < RowsSize; ++i) {
-                std::cout << "Row " << Rows[i].irow << ", Type: " << (Rows[i].type == 0 ? "Empty" : "Singleton") << "\n";
-            }
-            std::cout << "Empty and singleton cols:\n";
-            for (int i = 0; i < ColsSize; ++i) {
-                std::cout << "Col " << Cols[i].jcol << ", Type: " << (Cols[i].type == 0 ? "Empty" : "Singleton") << "\n";
-            }
-        }
+        // // 输出检测结果
+        // if (iter == 0) { // 仅在第一次迭代输出检测结果
+        //     std::cout << "Empty and singleton rows:\n";
+        //     for (int i = 0; i < RowsSize; ++i) {
+        //         std::cout << "Row " << Rows[i].irow << ", Type: " << (Rows[i].type == 0 ? "Empty" : "Singleton") << "\n";
+        //     }
+        //     std::cout << "Empty and singleton cols:\n";
+        //     for (int i = 0; i < ColsSize; ++i) {
+        //         std::cout << "Col " << Cols[i].jcol << ", Type: " << (Cols[i].type == 0 ? "Empty" : "Singleton") << "\n";
+        //     }
+        // }
     }
 
     double average_time_used = total_time_used / iterations;
-    printf("M: %d, N: %d, cuda多线程平均函数执行耗时: %f 秒\n", M, N, average_time_used);
+    printf("M: %d, N: %d, GPU多线程平均函数执行耗时: %f 秒\n", M, N, average_time_used);
 
     // 释放内存
     free(A);
