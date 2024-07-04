@@ -1,8 +1,6 @@
 echo "开始执行task1_test，结果将被写入到output/task1.txt"
-# 清空或创建输出文件
 echo "Task 1 Output" > output/task1.txt
 
-# 运行程序并追加输出到文件
 ./bin/task_1 "./data/A(100x200).bin" 100 200 >> output/task1.txt 2>&1
 ./bin/task_1 "./data/A(700x1500).bin" 700 1500 >> output/task1.txt 2>&1
 ./bin/task_1 "./data/A(821x1571).25fv47.bin" 821 1571 >> output/task1.txt 2>&1
