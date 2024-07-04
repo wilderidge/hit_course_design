@@ -1,12 +1,10 @@
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include <time.h>
 #include "public/Utils.h"
 #include "public/CheckMatrix.h"
-
-// #define M 2262
-// #define N 9779
 
 void *thread_function_check(void *arg) {
     ThreadData_check_task1 *data = (ThreadData_check_task1 *)arg;
@@ -47,21 +45,34 @@ void* threadFunction_Cols(void *arg) {
     pthread_exit(NULL);
 }
 
-void matrix_check(double **A, double *B, double *C, int nThread, int M, int N)
-{   //经试验，多线程带来的性能提升无法抵消多线程带来的额外开销，故此处最好是用单线程
+void matrix_check(double **A, double *B, double *C, int nThread, int M, int N, int flag)
+{
     if (nThread == 1)
     {
-        for (int i = 0; i < M; i++) {
-            B[i] = 0;
+        memset(B, 0, M * sizeof(double));
+        memset(C, 0, N * sizeof(double));
+        if(flag)
+        {
+            for (int i = 0; i < M; i++) {
+                for (int j = 0; j < N; j++) {
+                    if (A[i][j] != 0) {
+                        B[i] += 1;
+                        C[j] += 1;
+                    }
+                }
+            }
         }
-        for (int j = 0; j < N; j++) {
-            C[j] = 0;
-        }
-        for (int i = 0; i < M; i++) {
-            for (int j = 0; j < N; j++) {
-                if (A[i][j] != 0) {
-                    B[i] += 1;
-                    C[j] += 1;
+        else{
+            for (int i = 0; i < M; i++) {
+                for (int j = 0; j < N; j += 2) { // 每次迭代处理2个元素
+                    if (A[i][j] != 0) {
+                        B[i] += 1;
+                        C[j] += 1;
+                    }
+                    if (j + 1 < N && A[i][j + 1] != 0) { // 检查并处理第二个元素
+                        B[i] += 1;
+                        C[j + 1] += 1;
+                    }
                 }
             }
         }
@@ -248,9 +259,62 @@ int main(int argc, char *argv[])
     
         RowsSize = 0;
         ColsSize = 0;
-        
 
-        matrix_check(A, B, C, nThread, M, N);         
+        matrix_check(A, B, C, 1, M, N, 1);
+
+        CheckEmptyAndSingletonRows(B, M, N, &Rows, &RowsSize, 1);
+        // printf("RowsSize: %d\n", RowsSize);
+
+        CheckEmptyAndSingletonCols(C, M, N, &Cols, &ColsSize, 1);
+        // printf("ColsSize: %d\n", ColsSize);
+
+        end = clock();
+
+        cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+        total_time_used += cpu_time_used;
+    }
+
+    double average_time_used = total_time_used / iterations;
+    printf("M: %d, N: %d, 单线程平均函数执行耗时: %f 秒\n", M,N,average_time_used);
+
+    total_time_used = 0;
+    for (int iter = 0; iter < iterations; iter++) {
+        clock_t start, end;
+        double cpu_time_used;
+        start = clock();
+    
+        RowsSize = 0;
+        ColsSize = 0;
+
+        matrix_check(A, B, C, 1, M, N, 0);
+
+        CheckEmptyAndSingletonRows(B, M, N, &Rows, &RowsSize, 1);
+        // printf("RowsSize: %d\n", RowsSize);
+
+        CheckEmptyAndSingletonCols(C, M, N, &Cols, &ColsSize, 1);
+        // printf("ColsSize: %d\n", ColsSize);
+
+        end = clock();
+
+        cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+        total_time_used += cpu_time_used;
+    }
+
+    average_time_used = total_time_used / iterations;
+    printf("M: %d, N: %d, 单线程二循环展开平均函数执行耗时: %f 秒\n", M,N,average_time_used);
+
+
+    total_time_used = 0;
+    for (int iter = 0; iter < iterations; iter++) {
+        clock_t start, end;
+        double cpu_time_used;
+        start = clock();
+    
+        RowsSize = 0;
+        ColsSize = 0;
+        
+        matrix_check(A, B, C, nThread, M, N, 1);
+
         CheckEmptyAndSingletonRows(B, M, N, &Rows, &RowsSize, 1);
         // printf("RowsSize: %d\n", RowsSize);
 
@@ -264,32 +328,8 @@ int main(int argc, char *argv[])
         total_time_used += cpu_time_used;
     }
 
-    double average_time_used = total_time_used / iterations;
-    printf("M: %d, N: %d, 多线程平均函数执行耗时: %f 秒\n", M,N,average_time_used);
-
-    total_time_used = 0;
-    for (int iter = 0; iter < iterations; iter++) {
-        clock_t start, end;
-        double cpu_time_used;
-        start = clock();
-    
-        RowsSize = 0;
-        ColsSize = 0;
-
-        matrix_check(A, B, C, 1, M, N);
-
-        CheckEmptyAndSingletonRows(B, M, N, &Rows, &RowsSize, 1);
-
-        CheckEmptyAndSingletonCols(C, M, N, &Cols, &ColsSize, 1);
-
-        end = clock();
-
-        cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-        total_time_used += cpu_time_used;
-    }
-
     average_time_used = total_time_used / iterations;
-    printf("M: %d, N: %d, 单线程平均函数执行耗时: %f 秒\n\n", M,N,average_time_used);
+    printf("M: %d, N: %d, 八线程平均函数执行耗时: %f 秒\n\n", M,N,average_time_used);
 
     free(A);
     free(B);
