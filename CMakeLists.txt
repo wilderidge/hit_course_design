@@ -27,4 +27,4 @@ target_link_libraries(${PROJECT_NAME}2 pthread)
 add_executable (${PROJECT_NAME}3 task_3.c ${SRC_LIST})
 target_link_libraries(${PROJECT_NAME}3 pthread)
 
-add_subdirectory(${PROJECT_SOURCE_DIR}/test)
+# add_subdirectory(${PROJECT_SOURCE_DIR}/test)

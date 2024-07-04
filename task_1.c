@@ -228,7 +228,7 @@ int main(int argc, char *argv[])
 
     int nThread = 8;             //线程数
     double total_time_used = 0.0;
-    int iterations = 1;        //执行测试的次数
+    int iterations = 500;        //执行测试的次数
 
     double **A = malloc(M * sizeof(double *));
     double *B = malloc(M * sizeof(double));
@@ -263,10 +263,10 @@ int main(int argc, char *argv[])
         matrix_check(A, B, C, nThread, M, N, 1);
 
         CheckEmptyAndSingletonRows(B, M, N, &Rows, &RowsSize, 1);
-        printf("RowsSize: %d\n", RowsSize);
+        // printf("RowsSize: %d\n", RowsSize);
 
         CheckEmptyAndSingletonCols(C, M, N, &Cols, &ColsSize, 1);
-        printf("ColsSize: %d\n", ColsSize);
+        // printf("ColsSize: %d\n", ColsSize);
         
 
         end = clock();
@@ -290,10 +290,10 @@ int main(int argc, char *argv[])
         matrix_check(A, B, C, 1, M, N, 1);
 
         CheckEmptyAndSingletonRows(B, M, N, &Rows, &RowsSize, 1);
-        printf("RowsSize: %d\n", RowsSize);
+        // printf("RowsSize: %d\n", RowsSize);
 
         CheckEmptyAndSingletonCols(C, M, N, &Cols, &ColsSize, 1);
-        printf("ColsSize: %d\n", ColsSize);
+        // printf("ColsSize: %d\n", ColsSize);
 
         end = clock();
 
@@ -302,7 +302,7 @@ int main(int argc, char *argv[])
     }
 
     average_time_used = total_time_used / iterations;
-    printf("M: %d, N: %d, 单线程平均函数执行耗时: %f 秒\n\n", M,N,average_time_used);
+    printf("M: %d, N: %d, 单线程平均函数执行耗时: %f 秒\n", M,N,average_time_used);
 
 
     total_time_used = 0;
@@ -317,10 +317,10 @@ int main(int argc, char *argv[])
         matrix_check(A, B, C, 1, M, N, 0);
 
         CheckEmptyAndSingletonRows(B, M, N, &Rows, &RowsSize, 1);
-        printf("RowsSize: %d\n", RowsSize);
+        // printf("RowsSize: %d\n", RowsSize);
 
         CheckEmptyAndSingletonCols(C, M, N, &Cols, &ColsSize, 1);
-        printf("ColsSize: %d\n", ColsSize);
+        // printf("ColsSize: %d\n", ColsSize);
 
         end = clock();
 
