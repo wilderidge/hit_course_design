@@ -6,19 +6,6 @@
 #include "public/Utils.h"
 #include "public/CheckMatrix.h"
 
-void *thread_function_check(void *arg) {
-    ThreadData_check_task1 *data = (ThreadData_check_task1 *)arg;
-    for (int i = data->start_row; i < data->end_row; i++) {
-        for (int j = 0; j < data->N; j++) { // 使用 data->N 而不是全局的 N
-            if (data->A[i][j] != 0) {
-                data->B[i] += 1;
-                data->C[j] += 1;
-            }
-        }
-    }
-    pthread_exit(NULL);
-}
-
 void *threadFunction_Rows(void *arg) {
     ThreadData_task_Rows *data = (ThreadData_task_Rows *)arg;
     data->localRowsSize = 0;
@@ -30,71 +17,6 @@ void *threadFunction_Rows(void *arg) {
         }
     }
     pthread_exit(NULL);
-}
-
-void* threadFunction_Cols(void *arg) {
-    ThreadData_task_Cols *data = (ThreadData_task_Cols *)arg;
-    data->partialSize = 0;
-    for (int j = data->startCol; j < data->endCol; j++) {
-        if (data->C[j] == 0 || data->C[j] == 1) {
-            data->partialCols[data->partialSize].type = (data->C[j] == 0) ? EMPTY_COL : SINGLETON_COL;
-            data->partialCols[data->partialSize].jcol = j;
-            data->partialSize++;
-        }
-    }
-    pthread_exit(NULL);
-}
-
-void matrix_check(double **A, double *B, double *C, int nThread, int M, int N, int flag)
-{
-    if (nThread == 1)
-    {
-        memset(B, 0, M * sizeof(double));
-        memset(C, 0, N * sizeof(double));
-        if(flag)
-        {
-            for (int i = 0; i < M; i++) {
-                for (int j = 0; j < N; j++) {
-                    if (A[i][j] != 0) {
-                        B[i] += 1;
-                        C[j] += 1;
-                    }
-                }
-            }
-        }
-        else{
-            for (int i = 0; i < M; i++) {
-                for (int j = 0; j < N; j += 2) { // 每次迭代处理2个元素
-                    if (A[i][j] != 0) {
-                        B[i] += 1;
-                        C[j] += 1;
-                    }
-                    if (j + 1 < N && A[i][j + 1] != 0) { // 检查并处理第二个元素
-                        B[i] += 1;
-                        C[j + 1] += 1;
-                    }
-                }
-            }
-        }
-    }
-    else
-    {
-        pthread_t threads[nThread];
-        ThreadData_check_task1 thread_data[nThread];
-        int rows_per_thread = M / nThread;
-        for (int i = 0; i < nThread; i++) {
-            thread_data[i].start_row = i * rows_per_thread;
-            thread_data[i].end_row = (i + 1) * rows_per_thread;
-            thread_data[i].A = A;
-            thread_data[i].B = B;
-            thread_data[i].C = C;
-            thread_data[i].N = N;
-            pthread_create(&threads[i], NULL, thread_function_check, (void *)&thread_data[i]);
-        }
-        for (int i = 0; i < nThread; i++) {
-            pthread_join(threads[i], NULL);
-        }
-    }
 }
 
 int CheckEmptyAndSingletonRows(double *B, int m, int n, RowInfo **Rows, int *RowsSize ,int nThread )
@@ -149,69 +71,6 @@ int CheckEmptyAndSingletonRows(double *B, int m, int n, RowInfo **Rows, int *Row
     return 0;
 }
 
-int CheckEmptyAndSingletonCols(double *C, int m, int n, ColInfo **Cols, int *ColsSize, int nThread)
-{
-    if (nThread == 1)
-    {
-        *ColsSize = 0;
-        *Cols = malloc(n * sizeof(ColInfo));
-        if (*Cols == NULL) {
-            return -1;
-        }
-
-        for (int j = 0; j < n; j++)
-        {
-            if (C[j] == 0 || C[j] == 1)
-            {
-                (*Cols)[*ColsSize].type = (C[j] == 0) ? EMPTY_COL : SINGLETON_COL;
-                (*Cols)[*ColsSize].jcol = j;
-                (*ColsSize)++;
-            }
-        }
-
-        // 根据实际找到的列数重新调整 Cols 数组的大小
-        *Cols = realloc(*Cols, (*ColsSize) * sizeof(ColInfo));
-        if (*Cols == NULL && *ColsSize > 0) {
-            return -1;
-        }
-    }
-    else
-    {
-        *ColsSize = 0;
-        *Cols = malloc(n * sizeof(ColInfo));
-        if (*Cols == NULL) {
-            return -1;
-        }
-
-        pthread_t threads[nThread];
-        ThreadData_task_Cols threadData[nThread];
-        int colsPerThread = n / nThread;
-        int extraCols = n % nThread;
-
-        for (int i = 0; i < nThread; i++) {
-            int startCol = i * colsPerThread;
-            int endCol = startCol + colsPerThread + (i < extraCols ? 1 : 0);
-            threadData[i] = (ThreadData_task_Cols){C, startCol, endCol, malloc((endCol - startCol) * sizeof(ColInfo)), 0};
-            pthread_create(&threads[i], NULL, threadFunction_Cols, &threadData[i]);
-        }
-
-        for (int i = 0; i < nThread; i++) {
-            pthread_join(threads[i], NULL);
-            for (int j = 0; j < threadData[i].partialSize; j++) {
-                (*Cols)[*ColsSize] = threadData[i].partialCols[j];
-                (*ColsSize)++;
-            }
-            free(threadData[i].partialCols);
-        }
-
-        *Cols = realloc(*Cols, (*ColsSize) * sizeof(ColInfo));
-        if (*Cols == NULL && *ColsSize > 0) {
-            return -1;
-        }
-    }
-    return 0;
-}
-
 int main(int argc, char *argv[])
 {
     char *filename = "../A(2262x9799).80bau3b.bin";
@@ -228,7 +87,7 @@ int main(int argc, char *argv[])
 
     int nThread = 8;             //线程数
     double total_time_used = 0.0;
-    int iterations = 500;        //执行测试的次数
+    int iterations = 5;        //执行测试的次数
 
     double **A = malloc(M * sizeof(double *));
     double *B = malloc(M * sizeof(double));

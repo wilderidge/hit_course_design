@@ -26,9 +26,9 @@ include_directories(
 aux_source_directory(${PROJECT_SOURCE_DIR}/public SRC_LIST)
 
 #创建静态库
-add_library(check_matrix 
-    task_1.c
-)
+# add_library(check_matrix 
+#     task_1.c
+# )
 
 add_executable (${PROJECT_NAME}1 task_1.c ${SRC_LIST})
 target_link_libraries(${PROJECT_NAME}1 pthread)
@@ -37,7 +37,7 @@ add_executable (${PROJECT_NAME}2 task_2.c ${SRC_LIST})
 target_link_libraries(${PROJECT_NAME}2 PUBLIC OpenMP::OpenMP_C)
 
 add_executable (${PROJECT_NAME}3 task_3.c ${SRC_LIST})
-target_link_libraries(${PROJECT_NAME}3 PUBLIC OpenMP::OpenMP_C check_matrix)
+target_link_libraries(${PROJECT_NAME}3 PUBLIC OpenMP::OpenMP_C)
 
 add_executable (${PROJECT_NAME}avx task_avx.c ${SRC_LIST})
 target_link_libraries(${PROJECT_NAME}avx pthread)

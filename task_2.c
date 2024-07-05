@@ -134,7 +134,7 @@ int main(int argc, char *argv[]) {
     int N = 10000;
     
     double total_time_used = 0.0;
-    int iterations = 5;        //执行测试的次数
+    int iterations = 1;        //执行测试的次数
     
     
     double **A = malloc(M * sizeof(double *));

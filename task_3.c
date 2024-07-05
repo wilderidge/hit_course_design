@@ -74,6 +74,7 @@ int CheckDuplicatedRows(double **A, int m, int n, DupRowInfo **DupRows, ColInfo 
             fprintf(stderr, "error1!\n");
             return -1; // 内存分配失败
         }
+        
 
         int D[n];
         int index = 0;
@@ -83,19 +84,21 @@ int CheckDuplicatedRows(double **A, int m, int n, DupRowInfo **DupRows, ColInfo 
                 //printf("单元素列号:%d ",(*SingletonCols)[j].jcol);
             }
         }
-
+        
         for (int i = 0; i < n; ++i) {
             for (int j = i + 1; j < n; ++j) {
                 if (CompareRows(A[i], A[j], D, n,index)) {
+                    
                     // 找到重复行
                     tempRows[rowsCount].irow = i;
                     tempRows[rowsCount].krow = j;
                     //printf("Rows %d and %d are duplicated.\n", i,j);
                     rowsCount++;
+                    
                 }
             }
         }
-
+        
         // 重新分配内存以适应实际找到的重复列对数量
         *DupRows = realloc(tempRows, rowsCount * sizeof(DupRowInfo));
         if (!*DupRows) {
@@ -162,7 +165,7 @@ int CheckDuplicatedRows(double **A, int m, int n, DupRowInfo **DupRows, ColInfo 
 
 int main(int argc, char *argv[]) {
     double total_time_used = 0.0;
-    int iterations = 100;        //执行测试的次数
+    int iterations = 1;        //执行测试的次数
     double **A = malloc(M * sizeof(double *));
     double *B = malloc(M * sizeof(double));
     double *C = malloc(N * sizeof(double));
@@ -184,6 +187,8 @@ int main(int argc, char *argv[]) {
     }
 
     RandomMatrix(A, M, N);
+
+    
 
 
     // 设置重复行
@@ -207,19 +212,20 @@ int main(int argc, char *argv[]) {
 
 
 
-    matrix_check(A, B, C, 1, M, N);
+    matrix_check(A, B, C, 1, M, N, 1);
 
-
+    
 
     CheckEmptyAndSingletonCols(C, M, N, &Cols, &ColsSize, 1);
     
     
+
     //单线程测试循环
     for (int iter = 0; iter < iterations; iter++) {
         clock_t start, end;
         double cpu_time_used;
         start = clock();
-
+        
         // 检测重复行
         int duplicatedRowsCount = CheckDuplicatedRows(A, M, N, &Rows,&Cols, ColsSize, 1);
             
@@ -231,6 +237,7 @@ int main(int argc, char *argv[]) {
 
     double average_time_used = total_time_used / iterations;
     printf("M: %d ,N: %d ,单线程平均函数执行耗时: %f 秒\n", M, N, average_time_used);
+    
     
     
     total_time_used = 0;
