@@ -1,15 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
+#include <omp.h>
 #include <time.h>
 #include "public/Utils.h"
 #include "public/CheckMatrix.h"
-
-#define M 1000
-#define N 1000
-
-
-
 
 //数组转置
 void transposeMatrix(double **A, double **At, int m, int n) {
@@ -32,10 +28,10 @@ void transposeMatrix(double **A, double **At, int m, int n) {
 }
 
 // 比较两个向量比值是否相等
-int CompareColumns( double *col1, const double *col2, int m) {
+int CompareColumns( double *col1, double *col2, int m) {
     int i = 0;
     double ratio = 0;
-    for (; i < m; i++) {
+    for (i; i < m; i++) {
         if ((col2[i] == 0 && col1[i] != 0)||(col1[i] == 0 && col2[i] != 0)) {
             return 0; // 不相等
         }
@@ -45,14 +41,14 @@ int CompareColumns( double *col1, const double *col2, int m) {
         ratio = col1[i] / col2[i];
         break;
     }
-    for (int j = i; j < m; j++){
-        if (col1[j] / col2[j] != ratio  && fabs(col1[j] / col2[j] - ratio) > DPAR_PRESOLVE_TOL_AIJ){
+
+    for (int j = i+1; j < m; j++){
+        if (fabs(col1[j] - col2[j] * ratio) > DPAR_PRESOLVE_TOL_AIJ){
             return 0; // 不相等
         }
     }
     return 1; //相等
 }
-
 
 
 // 检查矩阵中的重复列
@@ -73,6 +69,7 @@ int CheckDuplicatedColumns(double **A, int m, int n, DupColInfo **Cols, int nThr
                     // 找到重复列
                     tempCols[colsCount].jcol = i;
                     tempCols[colsCount].kcol = j;
+                    //printf("Columns %d and %d are duplicated.\n", i,j);
                     colsCount++;
                 }
             }
@@ -87,13 +84,59 @@ int CheckDuplicatedColumns(double **A, int m, int n, DupColInfo **Cols, int nThr
 
         return colsCount; // 返回找到的重复列对的数量
     } else {
-        // 多线程版本（需要进一步实现）
-        // ...
-    }
+    
+        // 多线程版本
+        //printf("nthread!\n");
+
+        int colsCount = 0;
+        DupColInfo *tempCols = malloc(n * (n - 1) / 2 * sizeof(DupColInfo));
+        if (!tempCols) {
+            return -1; // 内存分配失败
+        }
+
+
+        #pragma omp parallel num_threads(nThread)
+        {
+            int tid = omp_get_thread_num();
+            #pragma omp for schedule(dynamic, 1) reduction(+:colsCount)
+            for (int i = 0; i < n; i++) {
+                // 动态分配任务,每次分配1行
+                for (int j = i + 1; j < n; j++) {
+                    if (CompareColumns(A[i], A[j], m)) {
+                        #pragma omp critical
+                        {
+                            tempCols[colsCount].jcol = i;
+                            tempCols[colsCount].kcol = j;
+                            //printf("Columns %d and %d are duplicated.\n", i,j);
+                            colsCount++;
+                        }
+                    }
+                }
+            }
+        }
+
+        // 重新分配内存以适应实际找到的重复列对数量
+        *Cols = realloc(tempCols, colsCount * sizeof(DupColInfo));
+        if (!*Cols) {
+            free(tempCols);
+            return -1; // 内存重新分配失败
+        }
+
+        return colsCount; // 返回找到的重复列对的数量
+          
+        }
 }
 
 
 int main(int argc, char *argv[]) {
+    char *filename = "./A(2262x9799).80bau3b.bin";
+    int M = 10000;
+    int N = 10000;
+    
+    double total_time_used = 0.0;
+    int iterations = 5;        //执行测试的次数
+    
+    
     double **A = malloc(M * sizeof(double *));
     double *pA = malloc(M * N * sizeof(double));
     double **At = malloc(N * sizeof(double *)); 
@@ -111,57 +154,113 @@ int main(int argc, char *argv[]) {
 
     }
 
+    
     RandomMatrix(A, M, N);
+    //ReadMatrix(A, M, N, filename);
 
-    // 设置重复列
+    //设置重复列
     for (int i = 0; i < M; i++) {
         A[i][5] = 2*A[i][4]; 
-        A[i][6] = A[i][3];   
+        A[i][6] = A[i][3];  
+        A[i][263] = A[i][33]; 
+        A[i][400] = A[i][8]; 
+        A[i][666] = A[i][55];
+         
     }
 
     // 转置矩阵 A
     transposeMatrix(A, At, M, N);
+    
+    //单线程测试循环
+    for (int iter = 0; iter < iterations; iter++) {
+        clock_t start, end;
+        double cpu_time_used;
+        start = clock();
 
-    // 打印矩阵A
-    // printf("Matrix A:\n");
-    // for (int i = 0; i < M; i++) {
-    //     for (int j = 0; j < N; j++) {
-    //         printf("%f ", A[i][j]);
-    //     }
-    //     printf("\n");
-    // }
+        // 检测重复列
+        int duplicatedColsCount = CheckDuplicatedColumns(At, M, N, &Cols, 1);
+            
+        end = clock();
 
-    // // 打印转置后的矩阵 At
-    // printf("Transposed Matrix At:\n");
-    // for (int i = 0; i < N; i++) {
-    //     for (int j = 0; j < M; j++) {
-    //         printf("%f ", At[i][j]);
-    //     }
-    //     printf("\n");
-    // }
-    // 检测重复列，这里使用单线程
-    clock_t start, end;
-    start = clock();
-    double cpu_time_used;
-    int iterations = 500;  
-    int duplicatedColsCount;
-    for(int i= 0;i<iterations;i++)
-        duplicatedColsCount = CheckDuplicatedColumns(At, M, N, &Cols, 1);
-    end = clock();
-    printf("duplicatedColsCount is:%d\n",duplicatedColsCount );
-
-    if (duplicatedColsCount < 0) {
-        printf("Failed to check duplicated columns.\n");
-    } else if (duplicatedColsCount == 0) {
-        printf("No duplicated columns found.\n");
-    } else {
-        printf("Found %d duplicated column pairs:\n", duplicatedColsCount);
-        for (int i = 0; i < duplicatedColsCount; i++) {
-            printf("Columns %d and %d are duplicated.\n", Cols[i].jcol, Cols[i].kcol);
-        }
+        cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+        total_time_used += cpu_time_used;
     }
-    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    printf("time used is %f\n",cpu_time_used);
+
+    double average_time_used = total_time_used / iterations;
+    printf("M: %d ,N: %d ,单线程平均函数执行耗时: %f 秒\n", M, N, average_time_used);
+    
+    
+    total_time_used = 0;
+    
+    //2线程测试循环
+    for (int iter = 0; iter < iterations; iter++) {
+        clock_t start, end;
+        double cpu_time_used;
+        start = clock();
+
+        // 检测重复列
+        int duplicatedColsCount = CheckDuplicatedColumns(At, M, N, &Cols, 2);
+            
+        end = clock();
+
+        cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+        total_time_used += cpu_time_used;
+    }
+
+    average_time_used = total_time_used / iterations;
+    printf("M: %d ,N: %d ,二线程平均函数执行耗时: %f 秒\n", M, N, average_time_used);
+    
+    total_time_used = 0;
+    
+    
+    //4线程测试循环
+    for (int iter = 0; iter < iterations; iter++) {
+        clock_t start, end;
+        double cpu_time_used;
+        start = clock();
+
+        // 检测重复列
+        int duplicatedColsCount = CheckDuplicatedColumns(At, M, N, &Cols, 4);
+            
+        end = clock();
+
+        cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+        total_time_used += cpu_time_used;
+    }
+
+    average_time_used = total_time_used / iterations;
+    printf("M: %d ,N: %d ,四线程平均函数执行耗时: %f 秒\n", M, N, average_time_used);
+    
+    
+    total_time_used = 0;
+    
+    
+    //8线程测试循环
+    for (int iter = 0; iter < iterations; iter++) {
+        clock_t start, end;
+        double cpu_time_used;
+        start = clock();
+
+        // 检测重复列
+        int duplicatedColsCount = CheckDuplicatedColumns(At, M, N, &Cols, 8);
+            
+        end = clock();
+
+        cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+        total_time_used += cpu_time_used;
+    }
+
+    average_time_used = total_time_used / iterations;
+    printf("M: %d ,N: %d ,八线程平均函数执行耗时: %f 秒\n", M, N, average_time_used);
+    
+    //if (duplicatedColsCount < 0) {
+    //    printf("Failed to check duplicated columns.\n");
+    //} else if (duplicatedColsCount == 0) {
+    //    printf("No duplicated columns found.\n");
+    //} else {
+    //    printf("Found %d duplicated column pairs:\n", duplicatedColsCount);
+    //}
+
     // 释放内存
     free(A);
     free(At);
