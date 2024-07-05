@@ -150,6 +150,72 @@ int CheckEmptyAndSingletonCols(double *C, int m, int n, ColInfo **Cols, int *Col
     return 0;
 }
 
+void *threadFunction_Rows(void *arg) {
+    ThreadData_task_Rows *data = (ThreadData_task_Rows *)arg;
+    data->localRowsSize = 0;
+    for (int i = data->startIdx; i < data->endIdx; i++) {
+        if (data->B[i] == 0 || data->B[i] == 1) {
+            data->localRows[data->localRowsSize].type = (data->B[i] == 0) ? EMPTY_ROW : SINGLETON_ROW;
+            data->localRows[data->localRowsSize].irow = i;
+            data->localRowsSize++;
+        }
+    }
+    pthread_exit(NULL);
+}
+
+int CheckEmptyAndSingletonRows(double *B, int m, int n, RowInfo **Rows, int *RowsSize ,int nThread)
+{
+    if (nThread == 1)
+    {
+        *RowsSize = 0;
+        *Rows = malloc(n * sizeof(RowInfo)); // 预分配足够的空间
+        if (*Rows == NULL) {
+            return -1;
+        }
+
+        for (int i = 0; i < n; i++)
+        {
+            if (B[i] == 0 || B[i] == 1)
+            {
+                (*Rows)[*RowsSize].type = (B[i] == 0) ? EMPTY_ROW : SINGLETON_ROW;
+                (*Rows)[*RowsSize].irow = i;
+                (*RowsSize)++;
+            }
+        }
+
+        // 根据实际找到的列数重新调整 Rows 数组的大小
+        *Rows = realloc(*Rows, (*RowsSize) * sizeof(RowInfo));
+        if (*Rows == NULL && *RowsSize > 0) {
+            return -1;
+        }
+    }
+    else
+    {
+        pthread_t threads[nThread];
+        ThreadData_task_Rows threadData[nThread];
+        int segmentSize = n / nThread;
+        for (int i = 0; i < nThread; i++) {
+            threadData[i].B = B;
+            threadData[i].startIdx = i * segmentSize;
+            threadData[i].endIdx = (i == nThread - 1) ? n : (i + 1) * segmentSize;
+            threadData[i].localRows = malloc(n * sizeof(RowInfo)); // 预分配足够的空间
+            pthread_create(&threads[i], NULL, threadFunction_Rows, (void *)&threadData[i]);
+        }
+        *RowsSize = 0;
+        *Rows = malloc(n * sizeof(RowInfo)); // 预分配足够的空间
+        for (int i = 0; i < nThread; i++) {
+            pthread_join(threads[i], NULL);
+            for (int j = 0; j < threadData[i].localRowsSize; j++) {
+                (*Rows)[*RowsSize] = threadData[i].localRows[j];
+                (*RowsSize)++;
+            }
+            free(threadData[i].localRows);
+        }
+    }
+    return 0;
+}
+
+
 /******************************************************************************
  读取特定矩阵文件
 

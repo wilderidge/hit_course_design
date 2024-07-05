@@ -23,3 +23,4 @@ int Matrix_Matrix_Multiplication(double **A, double **B, double **C, int M, int 
 int Matrix_Vector_Multiplication(double **A, double *x, double *b, int M, int N, int nThread);              //单线程、多线程矩阵-向量乘法
 void matrix_check(double **A, double *B, double *C, int nThread, int M, int N, int flag);
 int CheckEmptyAndSingletonCols(double *C, int m, int n, ColInfo **Cols, int *ColsSize, int nThread);
+int CheckEmptyAndSingletonRows(double *B, int m, int n, RowInfo **Rows, int *RowsSize ,int nThread);

@@ -6,71 +6,6 @@
 #include "public/Utils.h"
 #include "public/CheckMatrix.h"
 
-void *threadFunction_Rows(void *arg) {
-    ThreadData_task_Rows *data = (ThreadData_task_Rows *)arg;
-    data->localRowsSize = 0;
-    for (int i = data->startIdx; i < data->endIdx; i++) {
-        if (data->B[i] == 0 || data->B[i] == 1) {
-            data->localRows[data->localRowsSize].type = (data->B[i] == 0) ? EMPTY_ROW : SINGLETON_ROW;
-            data->localRows[data->localRowsSize].irow = i;
-            data->localRowsSize++;
-        }
-    }
-    pthread_exit(NULL);
-}
-
-int CheckEmptyAndSingletonRows(double *B, int m, int n, RowInfo **Rows, int *RowsSize ,int nThread )
-{
-    if (nThread == 1)
-    {
-        *RowsSize = 0;
-        *Rows = malloc(n * sizeof(RowInfo)); // 预分配足够的空间
-        if (*Rows == NULL) {
-            return -1;
-        }
-
-        for (int i = 0; i < n; i++)
-        {
-            if (B[i] == 0 || B[i] == 1)
-            {
-                (*Rows)[*RowsSize].type = (B[i] == 0) ? EMPTY_ROW : SINGLETON_ROW;
-                (*Rows)[*RowsSize].irow = i;
-                (*RowsSize)++;
-            }
-        }
-
-        // 根据实际找到的列数重新调整 Rows 数组的大小
-        *Rows = realloc(*Rows, (*RowsSize) * sizeof(RowInfo));
-        if (*Rows == NULL && *RowsSize > 0) {
-            return -1;
-        }
-    }
-    else
-    {
-        pthread_t threads[nThread];
-        ThreadData_task_Rows threadData[nThread];
-        int segmentSize = n / nThread;
-        for (int i = 0; i < nThread; i++) {
-            threadData[i].B = B;
-            threadData[i].startIdx = i * segmentSize;
-            threadData[i].endIdx = (i == nThread - 1) ? n : (i + 1) * segmentSize;
-            threadData[i].localRows = malloc(n * sizeof(RowInfo)); // 预分配足够的空间
-            pthread_create(&threads[i], NULL, threadFunction_Rows, (void *)&threadData[i]);
-        }
-        *RowsSize = 0;
-        *Rows = malloc(n * sizeof(RowInfo)); // 预分配足够的空间
-        for (int i = 0; i < nThread; i++) {
-            pthread_join(threads[i], NULL);
-            for (int j = 0; j < threadData[i].localRowsSize; j++) {
-                (*Rows)[*RowsSize] = threadData[i].localRows[j];
-                (*RowsSize)++;
-            }
-            free(threadData[i].localRows);
-        }
-    }
-    return 0;
-}
-
 int main(int argc, char *argv[])
 {
     char *filename = "../A(2262x9799).80bau3b.bin";
@@ -89,7 +24,7 @@ int main(int argc, char *argv[])
 
     int nThread = 8;             //线程数
     double total_time_used = 0.0;
-    int iterations = 500;        //执行测试的次数
+    int iterations = 100;        //执行测试的次数
 
     double **A = malloc(M * sizeof(double *));
     double *B = malloc(M * sizeof(double));
@@ -99,7 +34,6 @@ int main(int argc, char *argv[])
     ColInfo *Cols = malloc(N * sizeof(ColInfo));
     int RowsSize = 0; // 用于存储空行和单元素行的数量
     int ColsSize = 0; // 用于存储空列和单元素列的数量
-
 
     if (A == NULL || B == NULL || C == NULL || pA == NULL || Rows == NULL || Cols == NULL) {
         printf("Malloc matrix failed!\n");
@@ -182,7 +116,6 @@ int main(int argc, char *argv[])
         CheckEmptyAndSingletonCols(C, M, N, &Cols, &ColsSize, 1);
         // printf("ColsSize: %d\n", ColsSize);
         
-
         end = clock();
 
         cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
