@@ -1,5 +1,5 @@
 echo "开始GPU执行task1_gpu_test_gpu,结果将被写入到output/task1_gpu.md"
-echo "GPU of Task 1 Output" >> output/task1_gpu.md
+echo "# GPU of Task 1 Output" >> output/task1_gpu.md
 ./bin/task_1_gpu "./data/A(100x200).bin" 100 200 >> output/task1_gpu.md 2>&1
 ./bin/task_1_gpu "./data/A(700x1500).bin" 700 1500 >> output/task1_gpu.md 2>&1
 ./bin/task_1_gpu "./data/A(821x1571).25fv47.bin" 821 1571 >> output/task1_gpu.md 2>&1

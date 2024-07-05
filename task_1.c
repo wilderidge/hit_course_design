@@ -84,6 +84,8 @@ int main(int argc, char *argv[])
     }
     else if(argc != 4 && argc != 1)
         return 0;
+    
+    printf("## N: %d, M: %d\n", N, M);
 
     int nThread = 8;             //线程数
     double total_time_used = 0.0;
