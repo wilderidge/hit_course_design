@@ -61,7 +61,6 @@ int CompareRows(double *row1, const double *row2, int D[], int n, int index) {
 }
 
 
-
 // 检查矩阵中的重复行
 int CheckDuplicatedRows(double **A, int m, int n, DupRowInfo **DupRows, ColInfo **SingletonCols, int nSingletons ,int nThread) {
     if (nThread <= 1) {
@@ -188,9 +187,6 @@ int main(int argc, char *argv[]) {
 
     RandomMatrix(A, M, N);
 
-    
-
-
     // 设置重复行
     for (int i = 0; i < N; i++) {
         A[1][i] = 2*A[0][i];   
@@ -210,15 +206,9 @@ int main(int argc, char *argv[]) {
     }
     A[2][5] = 4;
 
-
-
     matrix_check(A, B, C, 1, M, N, 1);
 
-    
-
     CheckEmptyAndSingletonCols(C, M, N, &Cols, &ColsSize, 1);
-    
-    
 
     //单线程测试循环
     for (int iter = 0; iter < iterations; iter++) {
@@ -237,9 +227,7 @@ int main(int argc, char *argv[]) {
 
     double average_time_used = total_time_used / iterations;
     printf("* M: %d ,N: %d ,单线程平均函数执行耗时: %f 秒\n", M, N, average_time_used);
-    
-    
-    
+
     total_time_used = 0;
     
     //2线程测试循环
@@ -262,7 +250,6 @@ int main(int argc, char *argv[]) {
     
     total_time_used = 0;
     
-    
     //4线程测试循环
     for (int iter = 0; iter < iterations; iter++) {
         clock_t start, end;
@@ -283,7 +270,6 @@ int main(int argc, char *argv[]) {
     
     
     total_time_used = 0;
-    
     
     //8线程测试循环
     for (int iter = 0; iter < iterations; iter++) {

@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
 
     int nThread = 8;             //线程数
     double total_time_used = 0.0;
-    int iterations = 5;        //执行测试的次数
+    int iterations = 500;        //执行测试的次数
 
     double **A = malloc(M * sizeof(double *));
     double *B = malloc(M * sizeof(double));
