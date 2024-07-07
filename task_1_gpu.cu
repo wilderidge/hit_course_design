@@ -158,7 +158,7 @@ int main(int argc, char *argv[]) {
     // 执行测试并计时
     for (int iter = 0; iter < iterations; ++iter) {
         auto start = std::chrono::high_resolution_clock::now();
-        
+
         RowsSize = 0;
         ColsSize = 0;
         CheckEmptyAndSingletonRows(A, M, N, &Rows, &RowsSize);

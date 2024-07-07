@@ -6,20 +6,17 @@
 #include "public/Utils.h"
 #include "public/CheckMatrix.h"
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     char *filename = "../A(2262x9799).80bau3b.bin";
     int M = 2262;
     int N = 9799;
-    if(argc == 4)
-    {
+    if (argc == 4) {
         filename = argv[1];
         M = atoi(argv[2]);
         N = atoi(argv[3]);
-    }
-    else if(argc != 4 && argc != 1)
+    } else if (argc != 4 && argc != 1)
         return 0;
-    
+
     printf("## N: %d, M: %d\n", N, M);
 
     int nThread = 8;             //线程数
@@ -37,7 +34,12 @@ int main(int argc, char *argv[])
 
     if (A == NULL || B == NULL || C == NULL || pA == NULL || Rows == NULL || Cols == NULL) {
         printf("Malloc matrix failed!\n");
-        free(A); free(B); free(C); free(pA); free(Rows); free(Cols);
+        free(A);
+        free(B);
+        free(C);
+        free(pA);
+        free(Rows);
+        free(Cols);
         return 1;
     }
 
@@ -51,7 +53,7 @@ int main(int argc, char *argv[])
         clock_t start, end;
         double cpu_time_used;
         start = clock();
-    
+
         RowsSize = 0;
         ColsSize = 0;
 
@@ -70,14 +72,14 @@ int main(int argc, char *argv[])
     }
 
     double average_time_used = total_time_used / iterations;
-    printf("1. M: %d, N: %d, 单线程平均函数执行耗时: %f 秒\n", M,N,average_time_used);
+    printf("1. M: %d, N: %d, 单线程平均函数执行耗时: %f 秒\n", M, N, average_time_used);
 
     total_time_used = 0;
     for (int iter = 0; iter < iterations; iter++) {
         clock_t start, end;
         double cpu_time_used;
         start = clock();
-    
+
         RowsSize = 0;
         ColsSize = 0;
 
@@ -96,7 +98,7 @@ int main(int argc, char *argv[])
     }
 
     average_time_used = total_time_used / iterations;
-    printf("2. M: %d, N: %d, 单线程二循环展开平均函数执行耗时: %f 秒\n", M,N,average_time_used);
+    printf("2. M: %d, N: %d, 单线程二循环展开平均函数执行耗时: %f 秒\n", M, N, average_time_used);
 
 
     total_time_used = 0;
@@ -104,10 +106,10 @@ int main(int argc, char *argv[])
         clock_t start, end;
         double cpu_time_used;
         start = clock();
-    
+
         RowsSize = 0;
         ColsSize = 0;
-        
+
         matrix_check(A, B, C, nThread, M, N, 1);
 
         CheckEmptyAndSingletonRows(B, M, N, &Rows, &RowsSize, 1);
@@ -115,7 +117,7 @@ int main(int argc, char *argv[])
 
         CheckEmptyAndSingletonCols(C, M, N, &Cols, &ColsSize, 1);
         // printf("ColsSize: %d\n", ColsSize);
-        
+
         end = clock();
 
         cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
@@ -123,7 +125,7 @@ int main(int argc, char *argv[])
     }
 
     average_time_used = total_time_used / iterations;
-    printf("3. M: %d, N: %d, 八线程平均函数执行耗时: %f 秒\n\n", M,N,average_time_used);
+    printf("3. M: %d, N: %d, 八线程平均函数执行耗时: %f 秒\n\n", M, N, average_time_used);
 
     free(A);
     free(B);

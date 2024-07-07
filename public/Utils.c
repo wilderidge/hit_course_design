@@ -8,7 +8,7 @@
 #define ZERO_PROB 0.5 // 20%的概率生成0
 
 void *thread_function_check(void *arg) {
-    ThreadData_check_task1 *data = (ThreadData_check_task1 *)arg;
+    ThreadData_check_task1 *data = (ThreadData_check_task1 *) arg;
     for (int i = data->start_row; i < data->end_row; i++) {
         for (int j = 0; j < data->N; j++) { // 使用 data->N 而不是全局的 N
             if (data->A[i][j] != 0) {
@@ -21,14 +21,11 @@ void *thread_function_check(void *arg) {
 }
 
 
-void matrix_check(double **A, double *B, double *C, int nThread, int M, int N, int flag)
-{
-    if (nThread == 1)
-    {
+void matrix_check(double **A, double *B, double *C, int nThread, int M, int N, int flag) {
+    if (nThread == 1) {
         memset(B, 0, M * sizeof(double));
         memset(C, 0, N * sizeof(double));
-        if(flag)
-        {
+        if (flag) {
             for (int i = 0; i < M; i++) {
                 for (int j = 0; j < N; j++) {
                     if (A[i][j] != 0) {
@@ -37,8 +34,7 @@ void matrix_check(double **A, double *B, double *C, int nThread, int M, int N, i
                     }
                 }
             }
-        }
-        else{
+        } else {
             for (int i = 0; i < M; i++) {
                 for (int j = 0; j < N; j += 2) { // 每次迭代处理2个元素
                     if (A[i][j] != 0) {
@@ -52,9 +48,7 @@ void matrix_check(double **A, double *B, double *C, int nThread, int M, int N, i
                 }
             }
         }
-    }
-    else
-    {
+    } else {
         pthread_t threads[nThread];
         ThreadData_check_task1 thread_data[nThread];
         int rows_per_thread = M / nThread;
@@ -65,7 +59,7 @@ void matrix_check(double **A, double *B, double *C, int nThread, int M, int N, i
             thread_data[i].B = B;
             thread_data[i].C = C;
             thread_data[i].N = N;
-            pthread_create(&threads[i], NULL, thread_function_check, (void *)&thread_data[i]);
+            pthread_create(&threads[i], NULL, thread_function_check, (void *) &thread_data[i]);
         }
         for (int i = 0; i < nThread; i++) {
             pthread_join(threads[i], NULL);
@@ -73,8 +67,8 @@ void matrix_check(double **A, double *B, double *C, int nThread, int M, int N, i
     }
 }
 
-void* threadFunction_Cols(void *arg) {
-    ThreadData_task_Cols *data = (ThreadData_task_Cols *)arg;
+void *threadFunction_Cols(void *arg) {
+    ThreadData_task_Cols *data = (ThreadData_task_Cols *) arg;
     data->partialSize = 0;
     for (int j = data->startCol; j < data->endCol; j++) {
         if (data->C[j] == 0 || data->C[j] == 1) {
@@ -87,20 +81,16 @@ void* threadFunction_Cols(void *arg) {
 }
 
 
-int CheckEmptyAndSingletonCols(double *C, int m, int n, ColInfo **Cols, int *ColsSize, int nThread)
-{
-    if (nThread == 1)
-    {
+int CheckEmptyAndSingletonCols(double *C, int m, int n, ColInfo **Cols, int *ColsSize, int nThread) {
+    if (nThread == 1) {
         *ColsSize = 0;
         *Cols = malloc(n * sizeof(ColInfo));
         if (*Cols == NULL) {
             return -1;
         }
 
-        for (int j = 0; j < n; j++)
-        {
-            if (C[j] == 0 || C[j] == 1)
-            {
+        for (int j = 0; j < n; j++) {
+            if (C[j] == 0 || C[j] == 1) {
                 (*Cols)[*ColsSize].type = (C[j] == 0) ? EMPTY_COL : SINGLETON_COL;
                 (*Cols)[*ColsSize].jcol = j;
                 (*ColsSize)++;
@@ -112,9 +102,7 @@ int CheckEmptyAndSingletonCols(double *C, int m, int n, ColInfo **Cols, int *Col
         if (*Cols == NULL && *ColsSize > 0) {
             return -1;
         }
-    }
-    else
-    {
+    } else {
         *ColsSize = 0;
         *Cols = malloc(n * sizeof(ColInfo));
         if (*Cols == NULL) {
@@ -129,7 +117,8 @@ int CheckEmptyAndSingletonCols(double *C, int m, int n, ColInfo **Cols, int *Col
         for (int i = 0; i < nThread; i++) {
             int startCol = i * colsPerThread;
             int endCol = startCol + colsPerThread + (i < extraCols ? 1 : 0);
-            threadData[i] = (ThreadData_task_Cols){C, startCol, endCol, malloc((endCol - startCol) * sizeof(ColInfo)), 0};
+            threadData[i] = (ThreadData_task_Cols) {C, startCol, endCol, malloc((endCol - startCol) * sizeof(ColInfo)),
+                                                    0};
             pthread_create(&threads[i], NULL, threadFunction_Cols, &threadData[i]);
         }
 
@@ -151,7 +140,7 @@ int CheckEmptyAndSingletonCols(double *C, int m, int n, ColInfo **Cols, int *Col
 }
 
 void *threadFunction_Rows(void *arg) {
-    ThreadData_task_Rows *data = (ThreadData_task_Rows *)arg;
+    ThreadData_task_Rows *data = (ThreadData_task_Rows *) arg;
     data->localRowsSize = 0;
     for (int i = data->startIdx; i < data->endIdx; i++) {
         if (data->B[i] == 0 || data->B[i] == 1) {
@@ -163,20 +152,16 @@ void *threadFunction_Rows(void *arg) {
     pthread_exit(NULL);
 }
 
-int CheckEmptyAndSingletonRows(double *B, int m, int n, RowInfo **Rows, int *RowsSize ,int nThread)
-{
-    if (nThread == 1)
-    {
+int CheckEmptyAndSingletonRows(double *B, int m, int n, RowInfo **Rows, int *RowsSize, int nThread) {
+    if (nThread == 1) {
         *RowsSize = 0;
         *Rows = malloc(n * sizeof(RowInfo)); // 预分配足够的空间
         if (*Rows == NULL) {
             return -1;
         }
 
-        for (int i = 0; i < n; i++)
-        {
-            if (B[i] == 0 || B[i] == 1)
-            {
+        for (int i = 0; i < n; i++) {
+            if (B[i] == 0 || B[i] == 1) {
                 (*Rows)[*RowsSize].type = (B[i] == 0) ? EMPTY_ROW : SINGLETON_ROW;
                 (*Rows)[*RowsSize].irow = i;
                 (*RowsSize)++;
@@ -188,9 +173,7 @@ int CheckEmptyAndSingletonRows(double *B, int m, int n, RowInfo **Rows, int *Row
         if (*Rows == NULL && *RowsSize > 0) {
             return -1;
         }
-    }
-    else
-    {
+    } else {
         pthread_t threads[nThread];
         ThreadData_task_Rows threadData[nThread];
         int segmentSize = n / nThread;
@@ -199,7 +182,7 @@ int CheckEmptyAndSingletonRows(double *B, int m, int n, RowInfo **Rows, int *Row
             threadData[i].startIdx = i * segmentSize;
             threadData[i].endIdx = (i == nThread - 1) ? n : (i + 1) * segmentSize;
             threadData[i].localRows = malloc(n * sizeof(RowInfo)); // 预分配足够的空间
-            pthread_create(&threads[i], NULL, threadFunction_Rows, (void *)&threadData[i]);
+            pthread_create(&threads[i], NULL, threadFunction_Rows, (void *) &threadData[i]);
         }
         *RowsSize = 0;
         *Rows = malloc(n * sizeof(RowInfo)); // 预分配足够的空间
@@ -224,7 +207,7 @@ int CheckEmptyAndSingletonRows(double *B, int m, int n, RowInfo **Rows, int *Row
         M, N：矩阵维度
         filename:矩阵文件的路径
 ******************************************************************************/
-void ReadMatrix(double **A, int M, int N, char* filename) {
+void ReadMatrix(double **A, int M, int N, char *filename) {
     FILE *fp = fopen(filename, "rb"); // 以二进制模式打开文件
     if (fp == NULL) {
         fprintf(stderr, "无法打开文件 %s\n", filename);
@@ -233,7 +216,7 @@ void ReadMatrix(double **A, int M, int N, char* filename) {
 
     for (int i = 0; i < M; i++) {
         // 为矩阵的每一行分配内存
-        A[i] = (double *)malloc(N * sizeof(double));
+        A[i] = (double *) malloc(N * sizeof(double));
         if (A[i] == NULL) {
             fprintf(stderr, "内存分配失败\n");
             fclose(fp); // 确保在退出前关闭文件
@@ -263,19 +246,18 @@ void ReadMatrix(double **A, int M, int N, char* filename) {
         A: M*N 矩阵
         M, N：矩阵维度
 ******************************************************************************/
-void RandomMatrix(double **A, int M, int N)
-{
-    int     i, j;
-    double  Range = (double)(UPPER_BOUND - LOWER_BOUND);
+void RandomMatrix(double **A, int M, int N) {
+    int i, j;
+    double Range = (double) (UPPER_BOUND - LOWER_BOUND);
 
     srand(time(NULL));
 
-    for(i = 0; i < M; i++) {
-        for(j = 0; j < N; j++) {
-            if ((double)rand() / RAND_MAX < ZERO_PROB) {
+    for (i = 0; i < M; i++) {
+        for (j = 0; j < N; j++) {
+            if ((double) rand() / RAND_MAX < ZERO_PROB) {
                 A[i][j] = 0; // 有ZERO_PROB的概率设置为0
             } else {
-                A[i][j] = (double)rand() / RAND_MAX * Range + LOWER_BOUND;
+                A[i][j] = (double) rand() / RAND_MAX * Range + LOWER_BOUND;
             }
         }
     }
@@ -288,15 +270,14 @@ void RandomMatrix(double **A, int M, int N)
         a: N维向量 
         N：向量维度
 ******************************************************************************/
-void RandomVector(double *a, int N)
-{
-    int     i;
-    double  Range = (double)(UPPER_BOUND - LOWER_BOUND);
+void RandomVector(double *a, int N) {
+    int i;
+    double Range = (double) (UPPER_BOUND - LOWER_BOUND);
 
     srand(time(NULL));
 
-    for(i = 0; i < N; i++)
-        a[i] = (double)rand() / RAND_MAX * Range + LOWER_BOUND;
+    for (i = 0; i < N; i++)
+        a[i] = (double) rand() / RAND_MAX * Range + LOWER_BOUND;
 }
 
 /******************************************************************************
@@ -305,18 +286,16 @@ void RandomVector(double *a, int N)
     参数：
         arg: 传入参数(MatMulThreadInfo)指针
 ******************************************************************************/
-void *Thread_Matrix_Matrix_Multiplication_Func(void *arg)                                  
-{
-    MatMulThreadInfo        MatInfo = *(MatMulThreadInfo *)arg;
-    int                     i, j, k;
-    double                  Sum;
+void *Thread_Matrix_Matrix_Multiplication_Func(void *arg) {
+    MatMulThreadInfo MatInfo = *(MatMulThreadInfo *) arg;
+    int i, j, k;
+    double Sum;
 
-    for(i = 0; i < MatInfo.M; i++)
-        for(j = 0; j < MatInfo.N; j++)
-        {
+    for (i = 0; i < MatInfo.M; i++)
+        for (j = 0; j < MatInfo.N; j++) {
             Sum = 0.0;
 
-            for(k = 0; k < MatInfo.K; k++)
+            for (k = 0; k < MatInfo.K; k++)
                 Sum += MatInfo.A[i][k] * MatInfo.B[k][j];
 
             MatInfo.C[i][j] = Sum;
@@ -331,16 +310,14 @@ void *Thread_Matrix_Matrix_Multiplication_Func(void *arg)
     参数：
         arg: 传入参数(MatMulThreadInfo)指针
 ******************************************************************************/
-void *Thread_Matrix_Vector_Multiplication_Func(void *arg)                                  
-{
-    MatMulThreadInfo        MatInfo = *(MatMulThreadInfo *)arg;
-    int                     i, j;
-    double                  Sum;
+void *Thread_Matrix_Vector_Multiplication_Func(void *arg) {
+    MatMulThreadInfo MatInfo = *(MatMulThreadInfo *) arg;
+    int i, j;
+    double Sum;
 
-    for(i = 0; i < MatInfo.M; i++)
-    {
+    for (i = 0; i < MatInfo.M; i++) {
         MatInfo.b[i] = 0;
-        for(j = 0; j < MatInfo.N; j++)
+        for (j = 0; j < MatInfo.N; j++)
             MatInfo.b[i] += MatInfo.A[i][j] * MatInfo.x[j];
     }
 
@@ -365,68 +342,60 @@ void *Thread_Matrix_Vector_Multiplication_Func(void *arg)
         2：申请内存失败
         3：建立线程失败
 ******************************************************************************/
-int Matrix_Matrix_Multiplication(double **A, double **B, double **C, int M, int K, int N, int nThread)
-{
-    int                 i, j, k, L;
-    double              Sum;
-    MatMulThreadInfo    *pThreadInfo;               //线程参数结构
-    pthread_t           *ptThread;                  //线程handle
+int Matrix_Matrix_Multiplication(double **A, double **B, double **C, int M, int K, int N, int nThread) {
+    int i, j, k, L;
+    double Sum;
+    MatMulThreadInfo *pThreadInfo;               //线程参数结构
+    pthread_t *ptThread;                  //线程handle
 
-    if(nThread < 1)
-    {
+    if (nThread < 1) {
         //无线程，无法计算
         return 1;
-    }
-    else if(nThread == 1)
-    {
+    } else if (nThread == 1) {
         //单线程，串行计算
 
-        for(i = 0; i < M; i++)
-            for(j = 0; j < N; j++)
-            {
+        for (i = 0; i < M; i++)
+            for (j = 0; j < N; j++) {
                 Sum = 0.0;
 
-                for(k = 0; k < K; k++)
+                for (k = 0; k < K; k++)
                     Sum += A[i][k] * B[k][j];
 
                 C[i][j] = Sum;
             }
-    }
-    else
-    {
+    } else {
         //多线程计算
 
-        pThreadInfo = (MatMulThreadInfo *)malloc(nThread * sizeof(MatMulThreadInfo));
-        ptThread = (pthread_t *)malloc(nThread * sizeof(pthread_t *));
+        pThreadInfo = (MatMulThreadInfo *) malloc(nThread * sizeof(MatMulThreadInfo));
+        ptThread = (pthread_t *) malloc(nThread * sizeof(pthread_t *));
 
-        if((pThreadInfo == NULL) || (ptThread == NULL))
+        if ((pThreadInfo == NULL) || (ptThread == NULL))
             return 2;
 
         L = M / nThread;            //按设置的线程数分配工作块（单个线程所要计算的行数L）
 
-        for(i = 0; i < nThread; i++)
-        {
+        for (i = 0; i < nThread; i++) {
             //分配线程任务
-            pThreadInfo[i].A = &A[i*L];
+            pThreadInfo[i].A = &A[i * L];
             pThreadInfo[i].B = B;
-            pThreadInfo[i].C = &C[i*L];
+            pThreadInfo[i].C = &C[i * L];
 
-            if(i != nThread-1)
+            if (i != nThread - 1)
                 pThreadInfo[i].M = L;
-            else
-            {
-                pThreadInfo[i].M = M - (nThread-1)*L;
+            else {
+                pThreadInfo[i].M = M - (nThread - 1) * L;
             }
 
             pThreadInfo[i].K = K;
             pThreadInfo[i].N = N;
 
             //启动线程
-            if(pthread_create(&ptThread[i], NULL, Thread_Matrix_Matrix_Multiplication_Func, (void *)&(pThreadInfo[i])))
+            if (pthread_create(&ptThread[i], NULL, Thread_Matrix_Matrix_Multiplication_Func,
+                               (void *) &(pThreadInfo[i])))
                 return 3;
         }
 
-        for(i = 0; i < nThread; i++)
+        for (i = 0; i < nThread; i++)
             pthread_join(ptThread[i], NULL);                //等所有的子线程计算结束
 
         free(pThreadInfo);
@@ -454,62 +423,54 @@ int Matrix_Matrix_Multiplication(double **A, double **B, double **C, int M, int 
         2：申请内存失败
         3：建立线程失败
 ******************************************************************************/
-int Matrix_Vector_Multiplication(double **A, double *x, double *b, int M, int N, int nThread)
-{
-    int                 i, j, L;
-    MatMulThreadInfo    *pThreadInfo;               //线程参数结构
-    pthread_t           *ptThread;                  //线程handle
+int Matrix_Vector_Multiplication(double **A, double *x, double *b, int M, int N, int nThread) {
+    int i, j, L;
+    MatMulThreadInfo *pThreadInfo;               //线程参数结构
+    pthread_t *ptThread;                  //线程handle
 
-    if(nThread < 1)
-    {
+    if (nThread < 1) {
         //无线程，无法计算
         return 1;
-    }
-    else if(nThread == 1)
-    {
+    } else if (nThread == 1) {
         //单线程，串行计算
 
-        for(i = 0; i < M; i++)
-        {
+        for (i = 0; i < M; i++) {
             b[i] = 0.0;
-            for(j = 0; j < N; j++)
+            for (j = 0; j < N; j++)
                 b[i] += A[i][j] * x[j];
         }
-    }
-    else
-    {
+    } else {
         //多线程计算
 
-        pThreadInfo = (MatMulThreadInfo *)malloc(nThread * sizeof(MatMulThreadInfo));
-        ptThread = (pthread_t *)malloc(nThread * sizeof(pthread_t *));
+        pThreadInfo = (MatMulThreadInfo *) malloc(nThread * sizeof(MatMulThreadInfo));
+        ptThread = (pthread_t *) malloc(nThread * sizeof(pthread_t *));
 
-        if((pThreadInfo == NULL) || (ptThread == NULL))
+        if ((pThreadInfo == NULL) || (ptThread == NULL))
             return 2;
 
         L = M / nThread;            //按设置的线程数分配工作块（单个线程所要计算的行数L）
 
-        for(i = 0; i < nThread; i++)
-        {
+        for (i = 0; i < nThread; i++) {
             //分配线程任务
-            pThreadInfo[i].A = &A[i*L];
+            pThreadInfo[i].A = &A[i * L];
             pThreadInfo[i].x = x;
-            pThreadInfo[i].b = &b[i*L];
+            pThreadInfo[i].b = &b[i * L];
 
-            if(i != nThread-1)
+            if (i != nThread - 1)
                 pThreadInfo[i].M = L;
-            else
-            {
-                pThreadInfo[i].M = M - (nThread-1)*L;
+            else {
+                pThreadInfo[i].M = M - (nThread - 1) * L;
             }
 
             pThreadInfo[i].N = N;
 
             //启动线程
-            if(pthread_create(&ptThread[i], NULL, Thread_Matrix_Vector_Multiplication_Func, (void *)&(pThreadInfo[i])))
+            if (pthread_create(&ptThread[i], NULL, Thread_Matrix_Vector_Multiplication_Func,
+                               (void *) &(pThreadInfo[i])))
                 return 3;
         }
 
-        for(i = 0; i < nThread; i++)
+        for (i = 0; i < nThread; i++)
             pthread_join(ptThread[i], NULL);                //等所有的子线程计算结束
 
         free(pThreadInfo);

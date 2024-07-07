@@ -7,28 +7,28 @@
 #define SINGLETON_COL   3
 
 typedef struct {
-    int     type;
-    int     irow;
-    int     jcol;
-}RowInfo;
+    int type;
+    int irow;
+    int jcol;
+} RowInfo;
 
 typedef struct {
-    int     type;
-    int     jcol;
-    int     irow;
-}ColInfo;
+    int type;
+    int jcol;
+    int irow;
+} ColInfo;
 
 typedef struct {
-    int     irow;
-    int     krow;
-    double  v;
-}DupRowInfo;
+    int irow;
+    int krow;
+    double v;
+} DupRowInfo;
 
-typedef struct{
-    int     jcol;
-    int     kcol;
-    double  v;
-}DupColInfo;
+typedef struct {
+    int jcol;
+    int kcol;
+    double v;
+} DupColInfo;
 
 typedef struct {
     int start_row;
@@ -56,8 +56,11 @@ typedef struct {
 } ThreadData_task_Cols;
 
 
+int CheckEmptyAndSingletonRows(double *B, int m, int n, RowInfo **Rows, int *RowsSize, int nThread);
 
-int CheckEmptyAndSingletonRows(double *B, int m, int n, RowInfo **Rows, int *RowsSize ,int nThread);
 int CheckEmptyAndSingletonCols(double *C, int m, int n, ColInfo **Cols, int *ColsSize, int nThread);
-int CheckDuplicatedRows(double **A, int m, int n, DupRowInfo **DupRows, ColInfo **SingletonCols, int nSingletons, int nThread);
+
+int CheckDuplicatedRows(double **A, int m, int n, DupRowInfo **DupRows, ColInfo **SingletonCols, int nSingletons,
+                        int nThread);
+
 int CheckDuplicatedColumns(double **A, int m, int n, DupColInfo **Cols, int nThread);

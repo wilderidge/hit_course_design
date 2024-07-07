@@ -39,7 +39,7 @@ int CompareVector(double *vec1, double *vec2, int size, int scale) {
     __m256d diffThreshold = _mm256_set1_pd(DPAR_PRESOLVE_TOL_AIJ);
 
     __m256d scalarVec = _mm256_set1_pd(scale);
-    
+
     for (; i <= size - blockSize; i += blockSize) {
         __m256d vecA = _mm256_loadu_pd(&vec1[i]);
         __m256d vecB = _mm256_loadu_pd(&vec2[i]);
@@ -59,22 +59,22 @@ int CompareVector(double *vec1, double *vec2, int size, int scale) {
 }
 
 // 比较两个向量比值是否相等
-int CompareColumns( double *col1, double *col2, int m) {
+int CompareColumns(double *col1, double *col2, int m) {
     int i = 0;
     double ratio = 0;
     for (; i < m; i++) {
-        if ((col2[i] == 0 && col1[i] != 0)||(col1[i] == 0 && col2[i] != 0)) {
+        if ((col2[i] == 0 && col1[i] != 0) || (col1[i] == 0 && col2[i] != 0)) {
             return 0; // 不相等
         }
-        if(col2[i] == 0 && col1[i] == 0){
+        if (col2[i] == 0 && col1[i] == 0) {
             continue;
         }
         ratio = col1[i] / col2[i];
         break;
     }
     return CompareVector(col1, col2, m, ratio);
-    for (int j = i; j < m; j++){
-        if (col1[j] / col2[j] != ratio  && fabs(col1[j] / col2[j] - ratio) > DPAR_PRESOLVE_TOL_AIJ){
+    for (int j = i; j < m; j++) {
+        if (col1[j] / col2[j] != ratio && fabs(col1[j] / col2[j] - ratio) > DPAR_PRESOLVE_TOL_AIJ) {
             return 0; // 不相等
         }
     }
@@ -87,7 +87,7 @@ int CheckDuplicatedColumns(double **A, int m, int n, DupColInfo **Cols, int nThr
         // 单线程版本
         int colsCount = 0;
         //flag用来判断一列中是否有
-        int flag=0;
+        int flag = 0;
         DupColInfo *tempCols = malloc(n * (n - 1) / 2 * sizeof(DupColInfo));
         if (!tempCols) {
             return -1; // 内存分配失败
@@ -122,15 +122,18 @@ int CheckDuplicatedColumns(double **A, int m, int n, DupColInfo **Cols, int nThr
 int main(int argc, char *argv[]) {
     double **A = malloc(M * sizeof(double *));
     double *pA = malloc(M * N * sizeof(double));
-    double **At = malloc(N * sizeof(double *)); 
+    double **At = malloc(N * sizeof(double *));
     DupColInfo *Cols = malloc(N * sizeof(DupColInfo));;
 
-    if (A == NULL || pA == NULL || Cols == NULL ) {
+    if (A == NULL || pA == NULL || Cols == NULL) {
         printf("Malloc matrix failed!\n");
-        free(A); free(pA);  free(pA); free(Cols); 
+        free(A);
+        free(pA);
+        free(pA);
+        free(Cols);
         return 1;
     }
-    
+
     // 初始化矩阵A的指针
     for (int i = 0; i < M; i++) {
         A[i] = &(pA[i * N]);
@@ -141,8 +144,8 @@ int main(int argc, char *argv[]) {
 
     // 设置重复列
     for (int i = 0; i < M; i++) {
-        A[i][5] = 2*A[i][4]; 
-        A[i][6] = A[i][3];   
+        A[i][5] = 2 * A[i][4];
+        A[i][6] = A[i][3];
     }
 
     // 转置矩阵 A
@@ -171,12 +174,12 @@ int main(int argc, char *argv[]) {
     clock_t start, end;
     start = clock();
     double cpu_time_used;
-    int iterations = 500;  
+    int iterations = 500;
     int duplicatedColsCount;
-    for(int i= 0;i<iterations;i++)
+    for (int i = 0; i < iterations; i++)
         duplicatedColsCount = CheckDuplicatedColumns(At, M, N, &Cols, 1);
     end = clock();
-    printf("duplicatedColsCount is:%d\n",duplicatedColsCount );
+    printf("duplicatedColsCount is:%d\n", duplicatedColsCount);
 
     if (duplicatedColsCount < 0) {
         printf("Failed to check duplicated columns.\n");
@@ -189,7 +192,7 @@ int main(int argc, char *argv[]) {
         }
     }
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    printf("time used is %f\n",cpu_time_used);
+    printf("time used is %f\n", cpu_time_used);
     // 释放内存
     free(A);
     free(At);

@@ -12,7 +12,7 @@
 
 // 辅助函数,用于 bsearch 中的比较
 int compare_ints(const void *a, const void *b) {
-    return *(int *)a - *(int *)b;
+    return *(int *) a - *(int *) b;
 }
 
 int CompareRows(double *row1, const double *row2, int D[], int n, int index) {
@@ -24,7 +24,7 @@ int CompareRows(double *row1, const double *row2, int D[], int n, int index) {
     // 找到第一个非零元素
     for (i = 0; i < n; i++) {
         found = bsearch(&i, D, index, sizeof(int), compare_ints);
-        
+
         if (!found) {
             if (row1[i] != 0 || row2[i] != 0) {
                 first_nonzero = i;
@@ -39,7 +39,8 @@ int CompareRows(double *row1, const double *row2, int D[], int n, int index) {
     }
 
     // 计算第一个非零元素的比率
-    if ((row2[first_nonzero] == 0 && row1[first_nonzero] != 0) || (row2[first_nonzero] != 0 && row1[first_nonzero] == 0)) {
+    if ((row2[first_nonzero] == 0 && row1[first_nonzero] != 0) ||
+        (row2[first_nonzero] != 0 && row1[first_nonzero] == 0)) {
         return 0; // 不相等
     }
     ratio = row1[first_nonzero] / row2[first_nonzero];
@@ -62,42 +63,43 @@ int CompareRows(double *row1, const double *row2, int D[], int n, int index) {
 
 
 // 检查矩阵中的重复行
-int CheckDuplicatedRows(double **A, int m, int n, DupRowInfo **DupRows, ColInfo **SingletonCols, int nSingletons ,int nThread) {
+int CheckDuplicatedRows(double **A, int m, int n, DupRowInfo **DupRows, ColInfo **SingletonCols, int nSingletons,
+                        int nThread) {
     if (nThread <= 1) {
         // 单线程版本
         int rowsCount = 0;
         //flag用来判断一列中是否有
-        int flag=0;
+        int flag = 0;
         DupRowInfo *tempRows = malloc(n * (n - 1) / 2 * sizeof(DupRowInfo));
         if (!tempRows) {
             fprintf(stderr, "error1!\n");
             return -1; // 内存分配失败
         }
-        
+
 
         int D[n];
         int index = 0;
         for (int j = 0; j < nSingletons; j++) {
-            if ( (*SingletonCols)[j].type == 3) {
+            if ((*SingletonCols)[j].type == 3) {
                 D[index++] = (*SingletonCols)[j].jcol;
                 //printf("单元素列号:%d ",(*SingletonCols)[j].jcol);
             }
         }
-        
+
         for (int i = 0; i < n; ++i) {
             for (int j = i + 1; j < n; ++j) {
-                if (CompareRows(A[i], A[j], D, n,index)) {
-                    
+                if (CompareRows(A[i], A[j], D, n, index)) {
+
                     // 找到重复行
                     tempRows[rowsCount].irow = i;
                     tempRows[rowsCount].krow = j;
                     //printf("Rows %d and %d are duplicated.\n", i,j);
                     rowsCount++;
-                    
+
                 }
             }
         }
-        
+
         // 重新分配内存以适应实际找到的重复列对数量
         *DupRows = realloc(tempRows, rowsCount * sizeof(DupRowInfo));
         if (!*DupRows) {
@@ -110,32 +112,32 @@ int CheckDuplicatedRows(double **A, int m, int n, DupRowInfo **DupRows, ColInfo 
     } else {
         // 多线程版本
         //printf("nthread!\n");
-        
+
         int rowsCount = 0;
-        
+
         DupRowInfo *tempRows = malloc(n * (n - 1) / 2 * sizeof(DupRowInfo));
         if (!tempRows) {
             fprintf(stderr, "error1!\n");
             return -1; // 内存分配失败
         }
-        
+
         int D[n];
         int index = 0;
         for (int j = 0; j < nSingletons; j++) {
-            if ( (*SingletonCols)[j].type == 3) {
+            if ((*SingletonCols)[j].type == 3) {
                 D[index++] = (*SingletonCols)[j].jcol;
                 //printf("单元素列号:%d ",(*SingletonCols)[j].jcol);
             }
         }
 
-        #pragma omp parallel num_threads(nThread)
+#pragma omp parallel num_threads(nThread)
         {
             //int tid = omp_get_thread_num();
-            #pragma omp for schedule(dynamic, 1) reduction(+:rowsCount)
+#pragma omp for schedule(dynamic, 1) reduction(+:rowsCount)
             for (int i = 0; i < n; ++i) {
                 for (int j = i + 1; j < n; ++j) {
-                    if (CompareRows(A[i], A[j], D, n,index)) {
-                        #pragma omp critical
+                    if (CompareRows(A[i], A[j], D, n, index)) {
+#pragma omp critical
                         {
                             // 找到重复行
                             tempRows[rowsCount].irow = i;
@@ -146,9 +148,9 @@ int CheckDuplicatedRows(double **A, int m, int n, DupRowInfo **DupRows, ColInfo 
                     }
                 }
             }
-        
-       }
-       // 重新分配内存以适应实际找到的重复列对数量
+
+        }
+        // 重新分配内存以适应实际找到的重复列对数量
         *DupRows = realloc(tempRows, rowsCount * sizeof(DupRowInfo));
         if (!*DupRows) {
             free(tempRows);
@@ -157,7 +159,7 @@ int CheckDuplicatedRows(double **A, int m, int n, DupRowInfo **DupRows, ColInfo 
         }
 
         return rowsCount; // 返回找到的重复行对的数量
-     }
+    }
 
 }
 
@@ -175,10 +177,16 @@ int main(int argc, char *argv[]) {
 
     if (A == NULL || pA == NULL || B == NULL || C == NULL || Rows == NULL || Cols == NULL) {
         printf("Malloc matrix failed!\n");
-        free(A); free(pA); free(B); free(C); free(pA); free(Rows); free(Cols); 
+        free(A);
+        free(pA);
+        free(B);
+        free(C);
+        free(pA);
+        free(Rows);
+        free(Cols);
         return 1;
     }
-    
+
     // 初始化矩阵A的指针
     for (int i = 0; i < M; i++) {
         A[i] = &(pA[i * N]);
@@ -189,8 +197,8 @@ int main(int argc, char *argv[]) {
 
     // 设置重复行
     for (int i = 0; i < N; i++) {
-        A[1][i] = 2*A[0][i];   
-        A[2][i] = A[3][i]; 
+        A[1][i] = 2 * A[0][i];
+        A[2][i] = A[3][i];
 
     }
 
@@ -200,7 +208,7 @@ int main(int argc, char *argv[]) {
         A[i][2] = 0;
     }
 
-    
+
     for (int j = 0; j < M; j++) {
         A[j][5] = 0;
     }
@@ -215,10 +223,10 @@ int main(int argc, char *argv[]) {
         clock_t start, end;
         double cpu_time_used;
         start = clock();
-        
+
         // 检测重复行
-        int duplicatedRowsCount = CheckDuplicatedRows(A, M, N, &Rows,&Cols, ColsSize, 1);
-            
+        int duplicatedRowsCount = CheckDuplicatedRows(A, M, N, &Rows, &Cols, ColsSize, 1);
+
         end = clock();
 
         cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
@@ -229,7 +237,7 @@ int main(int argc, char *argv[]) {
     printf("* M: %d ,N: %d ,单线程平均函数执行耗时: %f 秒\n", M, N, average_time_used);
 
     total_time_used = 0;
-    
+
     //2线程测试循环
     for (int iter = 0; iter < iterations; iter++) {
         clock_t start, end;
@@ -237,8 +245,8 @@ int main(int argc, char *argv[]) {
         start = clock();
 
         // 检测重复行
-        int duplicatedRowsCount = CheckDuplicatedRows(A, M, N, &Rows,&Cols, ColsSize, 2);
-            
+        int duplicatedRowsCount = CheckDuplicatedRows(A, M, N, &Rows, &Cols, ColsSize, 2);
+
         end = clock();
 
         cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
@@ -247,9 +255,9 @@ int main(int argc, char *argv[]) {
 
     average_time_used = total_time_used / iterations;
     printf("* M: %d ,N: %d ,二线程平均函数执行耗时: %f 秒\n", M, N, average_time_used);
-    
+
     total_time_used = 0;
-    
+
     //4线程测试循环
     for (int iter = 0; iter < iterations; iter++) {
         clock_t start, end;
@@ -257,8 +265,8 @@ int main(int argc, char *argv[]) {
         start = clock();
 
         // 检测重复列
-        int duplicatedRowsCount = CheckDuplicatedRows(A, M, N, &Rows,&Cols, ColsSize, 4);
-            
+        int duplicatedRowsCount = CheckDuplicatedRows(A, M, N, &Rows, &Cols, ColsSize, 4);
+
         end = clock();
 
         cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
@@ -267,10 +275,10 @@ int main(int argc, char *argv[]) {
 
     average_time_used = total_time_used / iterations;
     printf("* M: %d ,N: %d ,四线程平均函数执行耗时: %f 秒\n", M, N, average_time_used);
-    
-    
+
+
     total_time_used = 0;
-    
+
     //8线程测试循环
     for (int iter = 0; iter < iterations; iter++) {
         clock_t start, end;
@@ -278,8 +286,8 @@ int main(int argc, char *argv[]) {
         start = clock();
 
         // 检测重复行
-        int duplicatedRowsCount = CheckDuplicatedRows(A, M, N, &Rows,&Cols, ColsSize, 8);
-            
+        int duplicatedRowsCount = CheckDuplicatedRows(A, M, N, &Rows, &Cols, ColsSize, 8);
+
         end = clock();
 
         cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
